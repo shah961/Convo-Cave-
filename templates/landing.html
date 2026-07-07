@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="relative overflow-hidden min-h-screen flex flex-col justify-between bg-caveDark text-gray-100 transition-colors duration-500" id="landing-body">
+    
+    <!-- GSAP Floating Background Spheres -->
+    <div id="orb1" class="absolute w-[400px] h-[400px] rounded-full bg-cavePurple opacity-20 blur-[120px] pointer-events-none top-10 left-10 transition-opacity animate-pulse"></div>
+    <div id="orb2" class="absolute w-[500px] h-[500px] rounded-full bg-caveNeon opacity-10 blur-[150px] pointer-events-none bottom-10 right-10 transition-opacity animate-pulse"></div>
+
+    <!-- 1. Header & Navigation -->
+   <!-- 1. Header & Navigation -->
+   <header class="w-full max-w-7xl mx-auto px-6 py-5 flex justify-between items-center z-20 relative opacity-0" id="header-nav">
+    <!-- Logo Image ONLY (Text removed, glow styles active) -->
+    <a href="/">
+        <img src="/static/logo.png" alt="Convo Cave Logo" class="h-12 w-auto logo-glow">
+    </a>
+    
+    <!-- Navigation Menu -->
+    <nav class="hidden md:flex space-x-8 text-sm font-medium">
+        <a href="#home" class="hover:text-caveNeon transition-colors">Home</a>
+        <a href="#features" class="hover:text-caveNeon transition-colors">Features</a>
+        <a href="#why-choose" class="hover:text-caveNeon transition-colors">Why Choose Us</a>
+        <a href="#testimonials" class="hover:text-caveNeon transition-colors">Reviews</a>
+        <a href="#faq" class="hover:text-caveNeon transition-colors">FAQ</a>
+    </nav>
+
+    <!-- Dynamic Toolbar Actions -->
+    <div class="flex items-center space-x-4">
+        <select class="bg-caveCard border border-white/10 text-xs rounded-lg px-2 py-1 text-gray-300 focus:outline-none" id="lang-selector">
+            <option value="en">English (US)</option>
+            <option value="es">Español</option>
+            <option value="ur">اردو</option>
+        </select>
+
+        <button class="p-2 rounded-full border border-white/10 hover:border-caveNeon hover:text-caveNeon transition-all" id="theme-toggle" title="Toggle Light/Dark Cave">
+            <span id="theme-icon">🌙</span>
+        </button>
+
+        <a href="/login" class="hidden sm:inline-block px-5 py-2 text-sm rounded-xl border border-cavePurple/50 hover:border-caveNeon hover:text-caveNeon transition-all">Login</a>
+        <a href="/signup" class="px-5 py-2 text-sm rounded-xl bg-cavePurple hover:bg-caveNeon hover:text-caveDark font-bold transition-all shadow-[0_0_15px_rgba(157,78,221,0.5)]">Sign Up</a>
+    </div>
+</header>
+    <!-- 2. Hero Section -->
+    <section id="home" class="relative z-10 max-w-7xl mx-auto px-6 py-20 flex flex-col lg:flex-row items-center gap-12 w-full my-auto">
+        <div class="flex-1 text-center lg:text-left">
+            <div class="inline-block px-4 py-1.5 mb-6 rounded-full border border-caveNeon/30 bg-caveCard/50 text-caveNeon text-xs tracking-widest uppercase font-bold opacity-0 shadow-[0_0_15px_rgba(0,255,204,0.1)] animate-pulse" id="hero-badge">
+                Convo Cave Realtime Sanctuary v2.0
+            </div>
+            <h2 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 opacity-0 leading-tight" id="hero-title">
+                The Ultimate Space For <br/>
+                <span class="bg-gradient-to-r from-caveNeon to-cavePurple bg-clip-text text-transparent">Real-Time Messaging</span>
+            </h2>
+            <p class="text-gray-400 text-base md:text-lg max-w-xl mb-8 opacity-0" id="hero-desc">
+                Engage in direct peer-to-peer discussions, group coordinate networks, secure video/audio calls, and deep secure cloud environments in one place.
+            </p>
+            <div class="flex flex-wrap justify-center lg:justify-start gap-4 opacity-0 mb-8" id="hero-cta">
+                <a href="/signup" class="px-8 py-4 rounded-xl bg-gradient-to-r from-cavePurple to-purple-800 text-white font-bold text-lg hover:scale-105 transition-all shadow-[0_0_20px_rgba(157,78,221,0.5)]">
+                    Get Started Free
+                </a>
+                <a href="#features" class="px-8 py-4 rounded-xl border border-white/10 hover:border-caveNeon hover:text-caveNeon font-bold text-lg transition-all">
+                    Explore Features
+                </a>
+            </div>
+            
+            <!-- Download Buttons with Vector App Logos -->
+            <div class="flex flex-wrap justify-center lg:justify-start gap-3 opacity-0" id="download-apps">
+                <button class="bg-caveCard border border-white/10 px-4 py-2.5 rounded-xl text-xs hover:border-caveNeon transition-all flex items-center gap-2">
+                    <i class='bx bxl-android text-base text-green-400'></i> Android App
+                </button>
+                <button class="bg-caveCard border border-white/10 px-4 py-2.5 rounded-xl text-xs hover:border-caveNeon transition-all flex items-center gap-2">
+                    <i class='bx bxl-apple text-base text-gray-300'></i> iOS App
+                </button>
+                <button class="bg-caveCard border border-white/10 px-4 py-2.5 rounded-xl text-xs hover:border-caveNeon transition-all flex items-center gap-2">
+                    <i class='bx bx-desktop text-base text-cavePurple'></i> Desktop
+                </button>
+            </div>
+        </div>
+
+        <!-- Hero Graphic Concept -->
+        <div class="flex-1 w-full max-w-md lg:max-w-none opacity-0" id="hero-gfx">
+            <div class="bg-caveCard border border-white/5 rounded-3xl p-6 shadow-2xl relative">
+                <div class="absolute -top-3 -left-3 px-3 py-1 bg-caveNeon text-caveDark font-bold text-xs rounded-full shadow-lg flex items-center gap-1">
+                    <i class='bx bx-broadcast animate-pulse'></i> LIVE PORTAL
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                    <div class="bg-caveDark/50 p-4 rounded-xl border border-white/5 space-y-2">
+                        <p class="text-xs text-caveNeon font-mono flex items-center gap-1">
+                            <i class='bx bx-terminal'></i> system_update_log: 2026-07-06
+                        </p>
+                        <p class="text-sm text-gray-300 font-medium">"Welcome to Convo Cave. Safe transmissions are active."</p>
+                    </div>
+                    <div class="h-40 bg-caveDark/80 rounded-xl flex items-center justify-center border border-white/5 text-gray-500 italic text-sm">
+                        <i class='bx bx-slideshow text-lg mr-2'></i> Real-time system preview
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Features Grid Section -->
+    <section id="features" class="max-w-7xl mx-auto px-6 py-20 w-full relative z-10">
+        <div class="text-center mb-16">
+            <h3 class="text-3xl md:text-4xl font-extrabold tracking-tight">Core Cave Systems</h3>
+            <p class="text-gray-400 mt-2">Engineered with high performance and absolute utility</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="features-grid">
+            <!-- Feature Card 1 -->
+            <div class="bg-caveCard border border-white/5 p-8 rounded-2xl hover:border-cavePurple/50 transition-all shadow-xl group">
+                <div class="w-12 h-12 bg-cavePurple/20 text-cavePurple rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class='bx bx-bolt text-2xl text-cavePurple'></i>
+                </div>
+                <h4 class="text-lg font-bold mb-2">Instant Messaging</h4>
+                <p class="text-sm text-gray-400 leading-relaxed">High-performance WebSocket sync enables instant real-time conversations.</p>
+            </div>
+            <!-- Feature Card 2 -->
+            <div class="bg-caveCard border border-white/5 p-8 rounded-2xl hover:border-caveNeon/50 transition-all shadow-xl group">
+                <div class="w-12 h-12 bg-caveNeon/20 text-caveNeon rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class='bx bx-lock-shield text-2xl text-caveNeon'></i>
+                </div>
+                <h4 class="text-lg font-bold mb-2">Secure Communications</h4>
+                <p class="text-sm text-gray-400 leading-relaxed">Cryptographic user-session validation ensures your data remains insulated and secure.</p>
+            </div>
+            <!-- Feature Card 3 -->
+            <div class="bg-caveCard border border-white/5 p-8 rounded-2xl hover:border-cavePurple/50 transition-all shadow-xl group">
+                <div class="w-12 h-12 bg-cavePurple/20 text-cavePurple rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class='bx bx-bot text-2xl text-cavePurple'></i>
+                </div>
+                <h4 class="text-lg font-bold mb-2">AI Assistant Integration</h4>
+                <p class="text-sm text-gray-400 leading-relaxed">Intelligent system models are ready to assist, draft suggestions, and translate chats.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Why Choose Us Section -->
+    <section id="why-choose" class="max-w-7xl mx-auto px-6 py-20 w-full relative z-10 border-t border-white/5">
+        <div class="flex flex-col lg:flex-row items-center gap-12">
+            <div class="flex-1 space-y-6">
+                <h3 class="text-3xl md:text-4xl font-extrabold tracking-tight">Why Choose Convo Cave?</h3>
+                <p class="text-gray-400 text-base leading-relaxed">
+                    Unlike standard bloated chat applications, Convo Cave focuses on lightweight processing speed, modern neon UI mechanics, and clean modular database sync.
+                </p>
+                <ul class="space-y-3 text-sm">
+                    <li class="flex items-center gap-2">
+                        <i class='bx bx-check-double text-caveNeon text-lg'></i> 100% Free with native local storage
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i class='bx bx-check-double text-caveNeon text-lg'></i> Cross-platform web support
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i class='bx bx-check-double text-caveNeon text-lg'></i> Integrated active Owner controls & audit logging
+                    </li>
+                </ul>
+            </div>
+            <div class="flex-1 w-full bg-caveCard/50 border border-white/5 rounded-2xl p-8 shadow-xl">
+                <h4 class="font-bold text-lg mb-4 text-caveNeon">Technical Operations Profile</h4>
+                <div class="space-y-4 font-mono text-xs">
+                    <div>
+                        <div class="flex justify-between mb-1"><span>Transmission Latency</span><span class="text-caveNeon">&lt;10ms</span></div>
+                        <div class="w-full bg-caveDark h-2 rounded-full"><div class="bg-caveNeon h-full rounded-full" style="width: 95%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-1"><span>Encryption Overhead</span><span class="text-cavePurple">Minimal</span></div>
+                        <div class="w-full bg-caveDark h-2 rounded-full"><div class="bg-cavePurple h-full rounded-full" style="width: 88%"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Testimonials Section -->
+    <section id="testimonials" class="max-w-7xl mx-auto px-6 py-20 w-full relative z-10 border-t border-white/5">
+        <div class="text-center mb-16">
+            <h3 class="text-3xl md:text-4xl font-extrabold tracking-tight">User Testimonials</h3>
+            <p class="text-gray-400 mt-2">What active residents are saying</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-caveCard border border-white/5 p-8 rounded-2xl shadow-xl">
+                <p class="text-gray-300 italic mb-6">"Convo Cave is highly performant. The GSAP transitions and overall dark purple design language align perfectly with my aesthetic workspace."</p>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-cavePurple/20 flex items-center justify-center"><i class='bx bx-user text-xl text-cavePurple'></i></div>
+                    <div>
+                        <h5 class="font-bold text-sm">Explorer One</h5>
+                        <p class="text-xs text-gray-500">Security Architect</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-caveCard border border-white/5 p-8 rounded-2xl shadow-xl">
+                <p class="text-gray-300 italic mb-6">"The real-time admin logging panel and direct socket stability make managing conversations incredibly simple."</p>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-caveNeon/20 flex items-center justify-center"><i class='bx bx-user text-xl text-caveNeon'></i></div>
+                    <div>
+                        <h5 class="font-bold text-sm">Explorer Two</h5>
+                        <p class="text-xs text-gray-500">Full-Stack Engineer</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Searchable FAQ Section -->
+    <section id="faq" class="max-w-4xl mx-auto px-6 py-20 w-full relative z-10 border-t border-white/5">
+        <div class="text-center mb-12">
+            <h3 class="text-3xl md:text-4xl font-extrabold tracking-tight">Frequently Asked Questions</h3>
+            <input type="text" id="faq-search" placeholder="Type keywords to filter FAQs..." class="w-full max-w-md bg-caveCard border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-caveNeon mt-6 text-center">
+        </div>
+
+        <div class="space-y-4" id="faq-accordion-container">
+            <!-- FAQ Item 1 -->
+            <div class="bg-caveCard border border-white/5 rounded-2xl overflow-hidden faq-item">
+                <button class="w-full px-6 py-4 text-left font-bold text-sm md:text-base flex justify-between items-center hover:bg-white/5 transition-colors faq-trigger">
+                    <span>How secure is Convo Cave database handling?</span>
+                    <i class='bx bx-chevron-down text-caveNeon text-xl faq-chevron transition-transform'></i>
+                </button>
+                <div class="max-h-0 overflow-hidden transition-all duration-300 ease-out faq-content">
+                    <p class="px-6 pb-4 text-sm text-gray-400 font-medium">Convo Cave implements dynamic SQLite database security with sha256 user password hashing metrics built directly inside Flask backend structures.</p>
+                </div>
+            </div>
+            <!-- FAQ Item 2 -->
+            <div class="bg-caveCard border border-white/5 rounded-2xl overflow-hidden faq-item">
+                <button class="w-full px-6 py-4 text-left font-bold text-sm md:text-base flex justify-between items-center hover:bg-white/5 transition-colors faq-trigger">
+                    <span>What does the Light Cave theme do?</span>
+                    <i class='bx bx-chevron-down text-caveNeon text-xl faq-chevron transition-transform'></i>
+                </button>
+                <div class="max-h-0 overflow-hidden transition-all duration-300 ease-out faq-content">
+                    <p class="px-6 pb-4 text-sm text-gray-400 font-medium">Toggling the theme flips the deep purple styling to a high-contrast elegant light system workspace for bright workspace configurations.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Footer -->
+    <footer class="w-full max-w-7xl mx-auto px-6 py-8 border-t border-white/5 z-20 relative flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+        <p>&copy; 2026 Convo Cave Systems. Licensed & Secure.</p>
+        <div class="flex space-x-6">
+            <a href="#" class="hover:text-caveNeon transition-colors">Privacy Policy</a>
+            <a href="#" class="hover:text-caveNeon transition-colors">Terms of Service</a>
+            <a href="#" class="hover:text-caveNeon transition-colors">Cookies</a>
+            <a href="/admin" class="hover:text-caveNeon transition-colors font-bold text-yellow-400/80">Owner Access</a>
+        </div>
+    </footer>
+</div>
+
+<!-- Page Interaction Scripts -->
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        gsap.to("#orb1", { x: 80, y: 40, duration: 8, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        gsap.to("#orb2", { x: -80, y: -60, duration: 10, repeat: -1, yoyo: true, ease: "sine.inOut" });
+
+        const tl = gsap.timeline();
+        tl.to("#header-nav", { opacity: 1, y: 10, duration: 0.8, ease: "power4.out" })
+          .to("#hero-badge", { opacity: 1, y: 5, duration: 0.6, ease: "back.out(1.7)" }, "-=0.4")
+          .to("#hero-title", { opacity: 1, y: 5, duration: 0.8, ease: "power4.out" }, "-=0.4")
+          .to("#hero-desc", { opacity: 1, y: 5, duration: 0.8, ease: "power4.out" }, "-=0.6")
+          .to("#hero-cta", { opacity: 1, duration: 0.6, ease: "power4.out" }, "-=0.4")
+          .to("#download-apps", { opacity: 1, duration: 0.6, ease: "power4.out" }, "-=0.4")
+          .to("#hero-gfx", { opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.2)" }, "-=0.8");
+
+        // Simple Toggle Light/Dark mode logic
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const landingBody = document.getElementById('landing-body');
+        const orb1 = document.getElementById('orb1');
+        const orb2 = document.getElementById('orb2');
+
+        themeToggle.addEventListener('click', () => {
+            if (landingBody.classList.contains('bg-caveDark')) {
+                landingBody.classList.remove('bg-caveDark', 'text-gray-100');
+                landingBody.classList.add('bg-gray-100', 'text-gray-900');
+                themeIcon.className = 'bx bx-sun text-lg';
+                orb1.style.opacity = '0.05';
+                orb2.style.opacity = '0.05';
+            } else {
+                landingBody.classList.remove('bg-gray-100', 'text-gray-900');
+                landingBody.classList.add('bg-caveDark', 'text-gray-100');
+                themeIcon.className = 'bx bx-moon text-lg';
+                orb1.style.opacity = '0.2';
+                orb2.style.opacity = '0.1';
+            }
+        });
+
+        // Searchable FAQ Accordion Logic
+        const faqTriggers = document.querySelectorAll('.faq-trigger');
+        const faqSearchInput = document.getElementById('faq-search');
+        const faqItems = document.querySelectorAll('.faq-item');
+
+        faqTriggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const content = trigger.nextElementSibling;
+                const chevron = trigger.querySelector('.faq-chevron');
+
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                    chevron.style.transform = "rotate(0deg)";
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    chevron.style.transform = "rotate(180deg)";
+                }
+            });
+        });
+
+        // FAQ Live Search Filtering
+        faqSearchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase().trim();
+            faqItems.forEach(item => {
+                const questionText = item.querySelector('.faq-trigger span').textContent.toLowerCase();
+                const answerText = item.querySelector('.faq-content p').textContent.toLowerCase();
+                
+                if (questionText.includes(term) || answerText.includes(term)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

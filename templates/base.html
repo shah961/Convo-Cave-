@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convo Cave</title>
+    <!-- Favicon Integration using your custom logo -->
+    <link rel="icon" href="/static/logo.png" type="image/png">
+    
+    <!-- Tailwind CSS for modern layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- GSAP for smooth animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        caveDark: '#0d0714',
+                        caveMidnight: '#150c22',
+                        caveCard: '#1d122d',
+                        caveNeon: '#00ffcc',
+                        cavePurple: '#9d4edd'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0d0714; }
+        ::-webkit-scrollbar-thumb { background: #9d4edd; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ffcc; }
+
+        /* Custom Logo Neon Glow and Transition Effects */
+        .logo-glow {
+            filter: drop-shadow(0 0 6px rgba(0, 255, 204, 0.3));
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .logo-glow:hover {
+            transform: scale(1.05) rotate(2deg);
+            filter: drop-shadow(0 0 12px rgba(0, 255, 204, 0.6)) drop-shadow(0 0 25px rgba(157, 78, 221, 0.4));
+        }
+    </style>
+</head>
+<body class="bg-caveDark text-gray-100 min-h-screen flex flex-col">
+    {% block content %}{% endblock %}
+</body>
+</html>
