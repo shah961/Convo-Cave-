@@ -206,7 +206,7 @@
             </div>
             <div class="flex justify-end gap-3 pt-2">
                 <button type="button" onclick="closeModal('create-room-modal')" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-gray-300">Cancel</button>
-                <button type="button" onclick="submitNewRoom()" class="px-5 py-2 rounded-xl bg-cavePurple hover:bg-caveNeon hover:text-caveDark text-white font-bold text-xs transition-all">Establish Channel</button>
+                <button type="button" onclick="handleCreateRoom()" class="px-5 py-2 rounded-xl bg-cavePurple hover:bg-caveNeon hover:text-caveDark text-white font-bold text-xs transition-all">Establish Channel</button>
             </div>
         </div>
     </div>
@@ -461,8 +461,8 @@
         if (!roomId) return;
         
         // Update header layout profiles
-        document.getElementById('current-chat-title').innerText = roomName;
-        document.getElementById('current-chat-desc').innerText = roomDesc;
+        document.getElementById('current-room-title').innerText = roomName;
+        document.getElementById('current-room-desc').innerText = roomDesc;
         
         // Update selection highlight borders across list view selectors
         document.querySelectorAll('[data-room-id]').forEach(btn => {
@@ -508,7 +508,7 @@
             const chatPayload = {
                 id: newRoomId,
                 name: name,
-                desc: desc,
+                group_description: desc,
                 type: type,
                 creator_id: currentUserId,
                 created_at: firebase.database.ServerValue.TIMESTAMP,

@@ -57,7 +57,12 @@ def signup():
         username = request.form.get('username').strip().lower()
         email = request.form.get('email').strip().lower()
         password = request.form.get('password')
-        
+        phone = request.form.get('phone', '').strip()
+        country = request.form.get('country', 'PK')
+        language = request.form.get('language', 'en')
+        timezone = request.form.get('timezone', 'UTC')
+        bio = request.form.get('bio', '').strip()
+
         if not username or not email or not password:
             flash('All credential metrics are required.')
             return redirect(url_for('signup'))
@@ -68,23 +73,23 @@ def signup():
         if existing_users:
             flash('Username parameter already registered.')
             return redirect(url_for('signup'))
-            
+
         # Check if email is already taken
         existing_emails = users_ref.order_by_child('email').equal_to(email).get()
         if existing_emails:
             flash('Email parameter already registered.')
             return redirect(url_for('signup'))
-            
+
         hashed_password = generate_password_hash(password, method='scrypt')
-        
+
         # Fetch current user snapshot count to determine the first master administrator
         all_users = users_ref.get()
         is_first = True if not all_users else False
-        
+
         # Create a new unique node ID inside the Firebase JSON tree
         new_user_ref = users_ref.push()
         user_id = new_user_ref.key
-        
+
         # Construct our decoupled user schema data profile
         user_payload = {
             "username": username,
@@ -93,29 +98,36 @@ def signup():
             "is_admin": is_first,
             "is_suspended": False,
             "is_banned": False,
+            "phone": phone,
+            "profile": {
+                "country": country,
+                "language": language,
+                "timezone": timezone,
+                "bio": bio
+            },
             "created_at": int(datetime.utcnow().timestamp() * 1000)
         }
-        
+
         # Write directly to the database via NoSQL document push
         new_user_ref.set(user_payload)
-        
+
         flash('Account verified. Proceed to log in.')
         return redirect(url_for('login'))
-        
+
     return render_template('signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        login_input = request.form.get('login_input').strip().lower()
+        login_input = request.form.get('username').strip().lower()
         password = request.form.get('password')
-        
+
         users_ref = firebase_db.reference('users')
-        
+
         # Search NoSQL snapshot references matching either username or email input fields
         user_record = None
         user_id = None
-        
+
         by_username = users_ref.order_by_child('username').equal_to(login_input).get()
         if by_username:
             user_id = list(by_username.keys())[0]
@@ -125,20 +137,20 @@ def login():
             if by_email:
                 user_id = list(by_email.keys())[0]
                 user_record = by_email[user_id]
-                
+
         if not user_record or not check_password_hash(user_record.get('password_hash', ''), password):
             flash('Invalid login authentication vectors.')
             return redirect(url_for('login'))
-            
+
         if user_record.get('is_banned', False):
             flash('Access terminated. Account banned by administration.')
             return redirect(url_for('login'))
-            
+
         # Initialize our lightweight SessionUser instance to bind with Flask-Login
         from auth_helper import SessionUser
         session_user = SessionUser(user_id, user_record)
         login_user(session_user)
-        
+
         # Mint our secure, serverless Firebase Custom Token for direct browser socket syncing!
         try:
             custom_token = auth.create_custom_token(user_id)
@@ -147,9 +159,9 @@ def login():
             print(f"Token generation breakdown: {e}")
             flash('Token engine error. Please retry initialization.')
             return redirect(url_for('login'))
-            
+
         return redirect(url_for('dashboard'))
-        
+
     return render_template('login.html')
 
 @app.route('/logout')
@@ -167,7 +179,7 @@ def logout():
 @login_required
 def dashboard():
     firebase_token = session.get('firebase_token', '')
-    
+
     # Gather configuration fields from environment variables safely for the client side
     firebase_config = {
         "apiKey": os.environ.get("FIREBASE_API_KEY", ""),
@@ -176,14 +188,32 @@ def dashboard():
         "projectId": os.environ.get("FIREBASE_PROJECT_ID", ""),
         "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET", "")
     }
-    
-    return render_template('dashboard.html', 
+
+    # Fetch rooms and users from Firebase
+    rooms_ref = firebase_db.reference('chats')
+    rooms_data = rooms_ref.get() or {}
+    rooms = []
+    for r_id, r_data in rooms_data.items():
+        rooms.append({"id": r_id, **r_data})
+
+    users_ref = firebase_db.reference('users')
+    users_data = users_ref.get() or {}
+    users = []
+    for u_id, u_data in users_data.items():
+        if u_id != current_user.id:
+            users.append({"id": u_id, **u_data})
+
+    default_room = rooms[0] if rooms else {"id": "lobby", "name": "General Lobby", "group_description": "Welcome to the Convo Cave General Lobby."}
+
+    return render_template('dashboard.html',
                            firebase_token=firebase_token,
                            firebase_config=firebase_config,
                            user_id=current_user.id,
-                           username=current_user.username)
+                           username=current_user.username,
+                           rooms=rooms,
+                           users=users,
+                           default_room=default_room)
 
 # Serverless WSGI engine entry point fallback configuration
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-        

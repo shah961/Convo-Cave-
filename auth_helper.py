@@ -15,6 +15,17 @@ class SessionUser(UserMixin):
         self.is_suspended = data.get('is_suspended', False)
         self.is_banned = data.get('is_banned', False)
 
+        # Mapping profile data to a class for dot-notation access in Jinja2
+        profile_data = data.get('profile', {})
+        class Profile:
+            def __init__(self, p_data):
+                self.country = p_data.get('country', 'N/A')
+                self.timezone = p_data.get('timezone', 'UTC')
+                self.bio = p_data.get('bio', '')
+                self.language = p_data.get('language', 'en')
+
+        self.profile = Profile(profile_data)
+
 def get_session_user(user_id):
     """
     Fetches user data from Firebase Realtime Database and initializes a session user object.

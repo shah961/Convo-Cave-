@@ -16,7 +16,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    phone = db.Column(db.Stringmkkkkkkknnnnnnnnnnnnnnnmmmkkkkkkkkkkkkkk 
+    phone = db.Column(db.String(20))
     # Core Relationships
     profile = db.relationship('Profile', backref='user', uselist=False, cascade='all, delete-orphan')
     chats = db.relationship('Chat', secondary=chat_participants, back_populates='participants')
@@ -48,7 +48,7 @@ class UserSetting(db.Model):
     chat_wallpaper = db.Column(db.String(100))
     font_size = db.Column(db.Integer, default=14)
     accent_color = db.Column(db.String(20), default='#9d4edd')
-    
+
     # Privacy configurations
     hide_last_seen = db.Column(db.Boolean, default=False)
     hide_online_status = db.Column(db.Boolean, default=False)
@@ -65,7 +65,7 @@ class Chat(db.Model):
     group_description = db.Column(db.Text)
     group_rules = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Relationships
     participants = db.relationship('User', secondary=chat_participants, back_populates='chats')
     messages = db.relationship('Message', backref='chat', cascade='all, delete-orphan', lazy='dynamic')
@@ -83,12 +83,10 @@ class Message(db.Model):
     file_size = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_edited = db.Column(db.Boolean, default=False)
-    
+
     # NEW STATUS TRACKING COLUMN ('sent', 'delivered', 'read')
     status = db.Column(db.String(20), default='sent')
-    
-    # Relationships
-    reactions = db.relationship('MessageReaction', backref='message', cascade='all, delete-orphan', lazy='dynamic')
+
     # Relationships
     reactions = db.relationship('MessageReaction', backref='message', cascade='all, delete-orphan', lazy='dynamic')
 
