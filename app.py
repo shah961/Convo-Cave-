@@ -54,8 +54,8 @@ def landing():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        username = request.form.get('username').strip().lower()
-        email = request.form.get('email').strip().lower()
+        username = request.form.get('username', '').strip().lower()
+        email = request.form.get('email', '').strip().lower()
         password = request.form.get('password')
         
         if not username or not email or not password:
@@ -158,7 +158,6 @@ def login():
         return redirect(url_for('dashboard'))
         
     return render_template('login.html')
-            
 
 
 @app.route('/logout')
@@ -197,10 +196,8 @@ def dashboard():
                            firebase_config=firebase_config,
                            user_id=current_user.id,
                            username=current_user.username,
-                           default_room=default_room_fallback) # 🌟 Passed fallback object here!
-    
+                           default_room=default_room_fallback)
 
 # Serverless WSGI engine entry point fallback configuration
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-        
