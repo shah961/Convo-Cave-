@@ -107,7 +107,14 @@ def signup():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        login_input = request.form.get('login_input').strip().lower()
+        # Safely try getting 'login_input', falling back to 'username' or 'email' fields from HTML form
+        raw_input = request.form.get('login_input') or request.form.get('username') or request.form.get('email') or ""
+        login_input = raw_input.strip().lower()
+        
+        if not login_input:
+            flash('Please enter your username or email address.')
+            return redirect(url_for('login'))
+            
         password = request.form.get('password')
         
         users_ref = firebase_db.reference('users')
@@ -151,6 +158,8 @@ def login():
         return redirect(url_for('dashboard'))
         
     return render_template('login.html')
+            
+
 
 @app.route('/logout')
 @login_required
