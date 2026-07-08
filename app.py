@@ -186,11 +186,19 @@ def dashboard():
         "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET", "")
     }
     
+    # Create a dummy default_room object to keep dashboard.html from throwing an UndefinedError
+    default_room_fallback = {
+        "id": "general",
+        "name": "# general"
+    }
+    
     return render_template('dashboard.html', 
                            firebase_token=firebase_token,
                            firebase_config=firebase_config,
                            user_id=current_user.id,
-                           username=current_user.username)
+                           username=current_user.username,
+                           default_room=default_room_fallback) # 🌟 Passed fallback object here!
+    
 
 # Serverless WSGI engine entry point fallback configuration
 if __name__ == '__main__':
