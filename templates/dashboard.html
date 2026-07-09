@@ -1,11 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
+<!-- Firebase v8 core SDK modules (Missing from base.html) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<!-- Lucide Icon System Engine -->
 <script src="https://unpkg.com/lucide@latest"></script>
+<!-- Standard imports for markdown compiling & syntax highlighting -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 
 <style>
+    
     :root {
         --accent-color: #9d4edd;
         --chat-font-size: 14px;
