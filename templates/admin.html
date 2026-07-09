@@ -1,12 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<!-- Lucide Icon System Engine -->
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <div class="min-h-screen bg-caveDark text-gray-100 font-sans p-6">
     <div class="max-w-7xl mx-auto space-y-6">
 
-        <!-- 1. HEADER & SYSTEM INDICATOR -->
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-caveCard border border-white/5 p-6 rounded-2xl gap-4 shadow-xl">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-xl bg-yellow-500/10 text-yellow-400 flex items-center justify-center border border-yellow-500/20">
@@ -18,7 +16,6 @@
                 </div>
             </div>
             
-            <!-- Quick Navigation Controls -->
             <div class="flex items-center gap-3 w-full md:w-auto">
                 <a href="/dashboard" class="flex-grow md:flex-grow-0 px-5 py-3 rounded-xl border border-white/10 hover:border-caveNeon hover:text-caveNeon text-xs font-bold transition-all flex items-center justify-center gap-2">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
@@ -26,9 +23,19 @@
             </div>
         </header>
 
-        <!-- 2. HEALTH & METRICS GRID -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <!-- Metric 1: Total Users -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="mb-6 space-y-2 font-mono text-xs">
+                {% for message in messages %}
+                <div class="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 px-4 py-3 rounded-xl flex items-center gap-2 animate-pulse">
+                    <i data-lucide="info" class="w-4 h-4"></i> {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="bg-caveCard border border-white/5 p-6 rounded-2xl flex items-center justify-between shadow-xl">
                 <div class="space-y-1">
                     <h4 class="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Residents</h4>
@@ -39,29 +46,16 @@
                 </div>
             </div>
 
-            <!-- Metric 2: Total Messages -->
             <div class="bg-caveCard border border-white/5 p-6 rounded-2xl flex items-center justify-between shadow-xl">
                 <div class="space-y-1">
-                    <h4 class="text-xs text-gray-400 font-bold uppercase tracking-wider">Transmissions Logged</h4>
-                    <p class="text-3xl font-extrabold text-cavePurple">{{ total_messages }}</p>
+                    <h4 class="text-xs text-gray-400 font-bold uppercase tracking-wider">Active Cave Rooms</h4>
+                    <p class="text-3xl font-extrabold text-cavePurple">{{ rooms|length }}</p>
                 </div>
                 <div class="w-10 h-10 rounded-xl bg-cavePurple/10 text-cavePurple flex items-center justify-center">
-                    <i data-lucide="database" class="w-5 h-5"></i>
+                    <i data-lucide="hash" class="w-5 h-5"></i>
                 </div>
             </div>
 
-            <!-- Metric 3: Active Status -->
-            <div class="bg-caveCard border border-white/5 p-6 rounded-2xl flex items-center justify-between shadow-xl">
-                <div class="space-y-1">
-                    <h4 class="text-xs text-gray-400 font-bold uppercase tracking-wider">Active Threat Index</h4>
-                    <p class="text-3xl font-extrabold text-emerald-400">0.0%</p>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-                    <i data-lucide="activity" class="w-5 h-5"></i>
-                </div>
-            </div>
-
-            <!-- Metric 4: System Status -->
             <div class="bg-caveCard border border-white/5 p-6 rounded-2xl flex items-center justify-between shadow-xl">
                 <div class="space-y-1">
                     <h4 class="text-xs text-gray-400 font-bold uppercase tracking-wider">System State</h4>
@@ -73,47 +67,50 @@
             </div>
         </div>
 
-        <!-- 3. SPLIT WORKSPACE GRID -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            <!-- LEFT WORKSPACE: RESIDENT DIRECTORY & SEARCH -->
             <section class="bg-caveMidnight border border-white/5 p-6 rounded-2xl flex flex-col shadow-xl">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3 border-b border-white/5 pb-4">
                     <div>
                         <h3 class="text-lg font-black text-gray-200">Resident Directory</h3>
-                        <p class="text-xs text-gray-500">Query and manage registered cave accounts</p>
+                        <p class="text-xs text-gray-500">Query and manage registered NoSQL accounts</p>
                     </div>
-                    <!-- Live Search Input -->
                     <input type="text" id="user-search" placeholder="Filter residents..." class="w-full sm:w-48 bg-caveDark border border-white/10 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-caveNeon text-gray-300">
                 </div>
 
                 <div class="overflow-y-auto max-h-[400px] space-y-3" id="user-list-container">
-                    {% for u in users %}
-                    <div class="flex items-center justify-between bg-caveCard/50 border border-white/5 p-4 rounded-xl user-row" data-username="{{ u.username.lower() }}" data-email="{{ u.email.lower() }}">
+                    {% for uid, udata in users.items() %}
+                    <div class="flex items-center justify-between bg-caveCard/50 border border-white/5 p-4 rounded-xl user-row" data-username="{{ udata.username.lower() if udata.username else '' }}" data-email="{{ udata.email.lower() if udata.email else '' }}">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-caveDark flex items-center justify-center text-sm font-bold text-caveNeon border border-white/5">
-                                {{ u.username[0] | upper }}
+                            <div class="w-10 h-10 rounded-xl bg-caveDark flex items-center justify-center text-sm font-bold text-caveNeon border border-white/5 uppercase">
+                                {{ udata.username[0] if udata.username else '?' }}
                             </div>
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <p class="font-bold text-sm text-gray-100">{{ u.username }}</p>
-                                    {% if u.is_admin %}
+                                    <p class="font-bold text-sm text-gray-100 uppercase">{{ udata.username }}</p>
+                                    {% if udata.is_admin %}
                                     <span class="bg-yellow-500/10 text-yellow-400 border border-yellow-400/20 text-[9px] px-2 py-0.5 rounded-full font-mono uppercase">Admin</span>
                                     {% endif %}
-                                    {% if u.is_banned %}
+                                    {% if udata.is_banned %}
                                     <span class="bg-red-500/10 text-red-400 border border-red-500/20 text-[9px] px-2 py-0.5 rounded-full font-mono uppercase">Banned</span>
                                     {% endif %}
                                 </div>
-                                <p class="text-[10px] text-gray-500 mt-0.5 font-mono">{{ u.email }}</p>
+                                <p class="text-[10px] text-gray-500 mt-0.5 font-mono">{{ udata.email }}</p>
                             </div>
                         </div>
 
-                        <!-- Administration Expel Button -->
-                        {% if not u.is_admin %}
-                        <form action="/admin/ban-user/{{ u.id }}" method="POST">
-                            <button type="submit" class="px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5" {% if u.is_banned %}disabled{% endif %}>
-                                <i data-lucide="user-x" class="w-3.5 h-3.5"></i> {% if u.is_banned %}Expelled{% else %}Expel{% endif %}
+                        {% if udata.username != username %}
+                        <form method="POST">
+                            <input type="hidden" name="target_id" value="{{ uid }}">
+                            {% if udata.is_banned %}
+                            <button type="submit" name="action" value="unban_user" class="px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/20 text-emerald-400 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5">
+                                <i data-lucide="user-check" class="w-3.5 h-3.5"></i> Revive
                             </button>
+                            {% else %}
+                            <button type="submit" name="action" value="ban_user" class="px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5">
+                                <i data-lucide="user-x" class="w-3.5 h-3.5"></i> Terminate
+                            </button>
+                            {% endif %}
                         </form>
                         {% endif %}
                     </div>
@@ -121,70 +118,40 @@
                 </div>
             </section>
 
-            <!-- RIGHT WORKSPACE: GLOBAL MESSAGING MODERATION -->
             <section class="bg-caveMidnight border border-white/5 p-6 rounded-2xl flex flex-col shadow-xl">
                 <div class="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
                     <div>
-                        <h3 class="text-lg font-black text-gray-200">Moderation Feed</h3>
-                        <p class="text-xs text-gray-500">Live feed of global transmissions</p>
+                        <h3 class="text-lg font-black text-gray-200">Active Architecture Rooms</h3>
+                        <p class="text-xs text-gray-500">Live configuration nodes management</p>
                     </div>
-                    <span class="text-[10px] text-caveNeon font-mono">Live Sync</span>
+                    <span class="text-[10px] text-caveNeon font-mono">Stateless Channels</span>
                 </div>
 
                 <div class="overflow-y-auto max-h-[400px] space-y-3">
-                    {% for msg in recent_messages %}
+                    {% for rid, rdata in rooms.items() %}
                     <div class="flex items-center justify-between bg-caveCard/50 border border-white/5 p-4 rounded-xl gap-4">
-                        <div class="overflow-hidden space-y-1">
-                            <div class="flex items-center gap-2">
-                                <p class="text-[10px] text-cavePurple font-bold">{{ msg.sender.username if msg.sender else 'System' }}</p>
-                                <span class="text-[9px] text-gray-600 font-mono">{{ msg.created_at.strftime('%Y-%m-%d %I:%M %p') }}</span>
-                            </div>
-                            <p class="text-xs text-gray-300 truncate max-w-sm">{{ msg.content }}</p>
+                        <div class="overflow-hidden space-y-1 max-w-[70%]">
+                            <span class="font-black text-caveNeon text-xs uppercase"># {{ rdata.name or rid }}</span>
+                            <p class="text-[10px] text-gray-500 truncate">{{ rdata.desc or 'No descriptions.' }}</p>
+                            <p class="text-[9px] text-gray-600 font-mono">Slug ID: {{ rid }}</p>
                         </div>
 
-                        <!-- Pruning Action Button -->
-                        <form action="/admin/delete-message/{{ msg.id }}" method="POST">
-                            <button type="submit" class="w-9 h-9 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-xl flex items-center justify-center transition-all" title="Prune Message">
+                        {% if rid != 'general' %}
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to completely purge this room node and all its chat documents permanently?');">
+                            <input type="hidden" name="target_id" value="{{ rid }}">
+                            <button type="submit" name="action" value="delete_room" class="w-9 h-9 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-xl flex items-center justify-center transition-all" title="Purge Room Node">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </form>
+                        {% else %}
+                        <span class="text-[9px] text-gray-600 font-bold uppercase select-none tracking-wider bg-white/5 border border-white/5 px-2 py-1 rounded-md">Protected</span>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
             </section>
 
         </div>
-
-        <!-- 4. BOTTOM PANEL: TERMINAL-STYLE AUDIT TRAIL LOGS -->
-        <section class="bg-caveMidnight border border-white/5 p-6 rounded-2xl flex flex-col shadow-xl">
-            <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-4">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="terminal" class="w-5 h-5 text-caveNeon"></i>
-                    <h3 class="text-lg font-black text-gray-200">System Security Audit Trail</h3>
-                </div>
-                <span class="text-[10px] text-gray-500 font-mono">Showing last 50 entries</span>
-            </div>
-
-            <!-- Terminal Stream window -->
-            <div class="bg-caveDark border border-white/5 rounded-xl p-4 font-mono text-xs text-gray-400 space-y-2 h-64 overflow-y-auto">
-                {% for log in audit_logs %}
-                <div class="flex flex-col sm:flex-row justify-between border-b border-white/5 pb-1 gap-2">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span class="text-gray-600">[{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}]</span>
-                        <span class="text-caveNeon font-bold">&gt;</span>
-                        <span class="text-gray-300">USER:</span>
-                        <span class="text-cavePurple font-bold font-sans">{{ log.user.username if log.user else 'Anonymous' }}</span>
-                        <span class="text-gray-300">ACTION:</span>
-                        <span class="bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-gray-300">{{ log.action }}</span>
-                    </div>
-                    <div>
-                        <span class="text-gray-600">IP:</span>
-                        <span class="text-gray-500 font-bold">{{ log.ip_address if log.ip_address else '127.0.0.1' }}</span>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </section>
 
     </div>
 </div>
@@ -198,18 +165,21 @@
         const userSearch = document.getElementById('user-search');
         const userRows = document.querySelectorAll('.user-row');
 
-        userSearch.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            userRows.forEach(row => {
-                const username = row.dataset.username;
-                const email = row.dataset.email;
-                if (username.includes(query) || email.includes(query)) {
-                    row.style.display = 'flex';
-                } else {
-                    row.style.display = 'none';
-                }
+        if(userSearch) {
+            userSearch.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                userRows.forEach(row => {
+                    const username = row.dataset.username || "";
+                    const email = row.dataset.email || "";
+                    if (username.includes(query) || email.includes(query)) {
+                        row.style.display = 'flex';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
             });
-        });
+        }
     });
 </script>
 {% endblock %}
+    
