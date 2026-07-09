@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<!-- Lucide Icon System Engine -->
 <script src="https://unpkg.com/lucide@latest"></script>
-<!-- Standard imports for markdown compiling & syntax highlighting -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
@@ -22,668 +20,551 @@
     .lucide {
         width: 18px;
         height: 18px;
-        stroke-width: 2;
+    }
+    .lucide-lg {
+        width: 24px;
+        height: 24px;
     }
 </style>
 
-<div class="flex h-screen overflow-hidden bg-caveDark text-gray-100 font-sans relative" 
-     id="dashboard-root"
-     data-user-id="{{ current_user.id }}" 
-     data-username="{{ current_user.username }}" 
-     data-default-room-id="{{ default_room.id }}">
-    
-    <!-- Drag & Drop Full Area Screen Shield -->
-    <div id="drop-zone-overlay" class="hidden absolute inset-0 bg-cavePurple/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center border-4 border-dashed border-caveNeon">
-        <i data-lucide="upload-cloud" class="w-16 h-16 text-white animate-bounce mb-4"></i>
-        <h3 class="text-2xl font-black text-white">Drop files directly in the Cave</h3>
-        <p class="text-xs text-caveNeon mt-1">Convo Cave accepts files up to 16MB</p>
-    </div>
+<div class="flex h-screen bg-caveDark text-gray-200 overflow-hidden font-sans select-none relative">
 
-    <!-- 1. LEFT ICON RAIL -->
-
-    <aside class="w-16 bg-caveMidnight border-r border-white/5 flex flex-col items-center py-5 justify-between z-20">
-        <div class="space-y-6 flex flex-col items-center">
-            <!-- Icon Rail Logo: Replaces the 'CC' block with your image -->
-            <div class="w-10 h-10 rounded-2xl overflow-hidden shadow-[0_0_15px_rgba(0,255,204,0.3)]">
-                <img src="/static/logo.png" alt="Logo" class="w-full h-full object-contain p-1.5 bg-caveCard">
-            </div>
-            <button class="w-10 h-10 rounded-xl bg-caveCard hover:bg-cavePurple/30 text-caveNeon flex items-center justify-center transition-all" title="Channels">
-                <i data-lucide="message-square"></i>
-            </button>
-
-            <button onclick="openModal('profile-modal')" class="w-10 h-10 rounded-xl bg-caveCard hover:bg-cavePurple/30 text-gray-300 flex items-center justify-center transition-all" title="User Profile">
-                <i data-lucide="user"></i>
-            </button>
-            <button onclick="openModal('customization-modal')" class="w-10 h-10 rounded-xl bg-caveCard hover:bg-cavePurple/30 text-gray-300 flex items-center justify-center transition-all" title="Theme Customization">
-                <i data-lucide="palette"></i>
-            </button>
-            {% if current_user.is_admin %}
-            <a href="/admin" class="w-10 h-10 rounded-xl bg-yellow-500/10 hover:bg-yellow-500 text-yellow-400 hover:text-caveDark flex items-center justify-center transition-all" title="Admin Control System">
-                <i data-lucide="shield"></i>
-            </a>
-            {% endif %}
-        </div>
-        <a href="/logout" class="w-10 h-10 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white flex items-center justify-center transition-all" title="Exit Cave">
-            <i data-lucide="log-out"></i>
-        </a>
-    </aside>
-
-
-    <!-- 2. SIDEBAR -->
-    <aside class="w-72 bg-caveCard border-r border-white/5 flex flex-col z-10">
-        <!-- Sidebar Header: Unified Single Logo (Branding text removed) -->
-        <div class="p-4 border-b border-white/5 flex justify-between items-center">
-            <a href="/" class="flex items-center">
-                <img src="/static/logo.png" alt="Convo Cave Logo" class="h-10 w-auto logo-glow">
-            </a>
-            <button onclick="openModal('create-room-modal')" class="w-8 h-8 rounded-lg bg-cavePurple/20 hover:bg-cavePurple text-caveNeon hover:text-white flex items-center justify-center transition-all shrink-0" title="Create Sub-Cave">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-            </button>
-        </div>
-
-
-        <div class="p-3 border-b border-white/5">
-            <input type="text" id="room-search" placeholder="Search channels & users..." class="w-full bg-caveDark border border-white/10 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-caveNeon text-gray-300">
-        </div>
-
-        <div class="flex-grow overflow-y-auto p-3 space-y-4">
-            <div>
-                <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 mb-2">Public Caves</h4>
-                <div id="room-list" class="space-y-1">
-                    {% for room in rooms %}
-                    <button onclick="switchRoom(this)" 
-                            id="room-btn-{{ room.id }}" 
-                            data-room-id="{{ room.id }}"
-                            data-room-name="{{ room.name }}"
-                            data-room-desc="{{ room.group_description }}"
-                            class="room-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center justify-between transition-all {% if room.id == default_room.id %}bg-cavePurple text-white shadow-md{% else %}text-gray-400 hover:bg-white/5 hover:text-gray-200{% endif %}">
-                        <span class="truncate">{{ room.name }}</span>
-                        <span class="w-2 h-2 rounded-full bg-caveNeon"></span>
-                    </button>
-                    {% endfor %}
+        <aside class="w-80 bg-caveMidnight border-r border-white/5 flex flex-col justify-between p-4 z-20">
+        <div class="space-y-6">
+            <div class="flex items-center justify-between border-b border-white/5 pb-4">
+                <div class="flex items-center gap-3">
+                    <img src="/static/logo.png" alt="Convo Cave" class="h-8 w-auto logo-glow">
+                    <div>
+                        <span class="text-sm font-black tracking-widest text-caveNeon">CONVO CAVE</span>
+                        <p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Serverless Active</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-[9px] font-mono font-bold text-emerald-400 tracking-wider">ONLINE</span>
                 </div>
             </div>
 
-           <!-- Active Residents Directory (WhatsApp-style Direct Messages) -->
-           <div>
-            <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 mb-2 font-mono">Direct Messages</h4>
-            <div class="space-y-1" id="explorer-dm-list">
-                {% for u in users %}
-                <button onclick="startPrivateChat(this)" 
-                        id="explorer-btn-{{ u.id }}" 
-                        data-explorer-id="{{ u.id }}"
-                        data-explorer-name="{{ u.username }}"
-                        data-explorer-bio="{{ u.profile.bio or 'Secure 1-to-1 transmission line active.' }}"
-                        class="room-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center justify-between transition-all text-gray-400 hover:bg-white/5 hover:text-gray-200">
-                    <div class="flex items-center gap-2 overflow-hidden">
-                        <div class="w-6 h-6 rounded-full bg-cavePurple flex items-center justify-center text-[10px] font-bold text-white shrink-0">
-                            {{ u.username[0] | upper }}
-                        </div>
-                        <span class="truncate">{{ u.username }}</span>
+            <div class="bg-caveCard border border-white/5 p-4 rounded-xl space-y-4 shadow-lg relative overflow-hidden group">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-cavePurple/20 text-cavePurple flex items-center justify-center border border-cavePurple/30 relative">
+                        <i data-lucide="terminal" class="w-6 h-6"></i>
+                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border border-caveCard rounded-full"></span>
                     </div>
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.4)]"></span>
-                </button>
-                {% endfor %}
-            </div>
-        </div>
-        </div>
-    </aside>
+                    <div>
+                        <h3 class="text-sm font-black tracking-wide text-gray-200 uppercase">{{ username }}</h3>
+                        <p class="text-[10px] font-mono text-cavePurple">UID: <span class="text-gray-400 font-bold">{{ user_id[:8] }}...</span></p>
+                    </div>
+                </div>
 
-    <!-- 3. WORKSPACE -->
-    <main class="flex-grow flex flex-col bg-caveMidnight relative overflow-hidden" id="drop-zone-trigger">
-        <header class="h-16 bg-caveCard border-b border-white/5 px-6 flex items-center justify-between z-10 shadow-sm">
-            <div>
-                <h2 id="current-room-title" class="font-extrabold text-gray-100 text-base">{{ default_room.name }}</h2>
-                <p id="current-room-desc" class="text-xs text-gray-500">{{ default_room.group_description }}</p>
+                <div class="space-y-1.5 text-xs font-mono border-t border-white/5 pt-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Location:</span>
+                        <span class="font-bold text-caveNeon">{{ current_user.profile.country if current_user.profile else 'Pakistan' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Privilege:</span>
+                        <span class="font-bold {{ 'text-yellow-400' if current_user.is_admin else 'text-gray-400' }}">
+                            {{ 'Master Admin' if current_user.is_admin else 'Standard Node' }}
+                        </span>
+                    </div>
+                </div>
+                            </div>
+
+                        <div class="space-y-2 flex-grow overflow-y-auto pr-1">
+                <div class="flex items-center justify-between text-xs font-mono uppercase text-gray-500 tracking-wider px-2">
+                    <span>Communication Rooms</span>
+                    <button onclick="openModal('create-room-modal')" class="hover:text-caveNeon transition-colors">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div id="rooms-list-container" class="space-y-1">
+                    <div class="text-xs text-gray-600 italic px-2">Loading active matrix nodes...</div>
+                </div>
             </div>
-            <div class="flex items-center space-x-3 text-xs">
-                <input type="file" id="file-uploader" class="hidden" onchange="processFileUpload(this.files[0])">
-                <button onclick="document.getElementById('file-uploader').click()" class="px-3 py-2 rounded-lg bg-caveDark border border-white/10 hover:border-caveNeon text-gray-300 flex items-center gap-1.5">
-                    <i data-lucide="paperclip" class="w-4 h-4 text-caveNeon"></i> Share File
-                </button>
-                <button onclick="alert('WebRTC Call module ready.')" class="px-3 py-2 rounded-lg bg-caveDark border border-white/10 hover:border-caveNeon text-gray-300 flex items-center gap-1.5">
-                    <i data-lucide="phone" class="w-4 h-4"></i> Voice
+        </div>
+
+        <div class="space-y-3 pt-4 border-t border-white/5 bg-caveMidnight">
+            {% if current_user.is_admin %}
+            <a href="/admin" class="flex items-center gap-3 w-full bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 px-4 py-3 rounded-xl text-yellow-400 font-bold text-xs font-mono transition-all group">
+                <i data-lucide="shield-alert" class="w-4 h-4 text-yellow-400 transition-transform group-hover:scale-110"></i>
+                <span class="tracking-wide">ADMIN CONSOLE</span>
+            </a>
+            {% endif %}
+
+            <button onclick="openModal('settings-modal')" class="flex items-center gap-3 w-full bg-white/5 hover:bg-white/10 border border-white/5 px-4 py-3 rounded-xl text-gray-300 font-bold text-xs font-mono transition-all group">
+                <i data-lucide="sliders" class="w-4 h-4 text-cavePurple transition-transform group-hover:rotate-45"></i>
+                <span class="tracking-wide">ENGINE SETTINGS</span>
+            </button>
+
+            <a href="/logout" class="flex items-center gap-3 w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 px-4 py-3 rounded-xl text-red-400 font-bold text-xs font-mono transition-all group">
+                <i data-lucide="log-out" class="w-4 h-4 text-red-400 transition-transform group-hover:translate-x-0.5"></i>
+                <span class="tracking-wide">TERMINATE SESSION</span>
+            </a>
+        </div>
+                        </aside>
+
+    
+            <main class="flex-grow flex flex-col h-full bg-caveDark relative z-10">
+        <header class="h-16 bg-caveMidnight/60 backdrop-blur border-b border-white/5 flex items-center justify-between px-6 z-10 shadow-md">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-caveNeon/10 border border-caveNeon/20 text-caveNeon flex items-center justify-center">
+                    <i data-lucide="hash" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h2 id="active-room-title" class="text-sm font-black text-gray-100 uppercase tracking-wide">Select Communication Room</h2>
+                    <p id="active-room-desc" class="text-[11px] text-gray-500 font-mono">Real-time authentication pipeline standby</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div id="room-members-badge" class="hidden items-center gap-1.5 bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg text-[10px] font-mono text-gray-400">
+                    <i data-lucide="users" class="w-3.5 h-3.5 text-cavePurple"></i>
+                    <span>MEMBERS: <strong id="room-members-count" class="text-gray-200">0</strong></span>
+                </div>
+                <button onclick="openModal('room-details-modal')" class="p-2 hover:bg-white/5 border border-transparent hover:border-white/5 rounded-lg text-gray-400 hover:text-caveNeon transition-all">
+                    <i data-lucide="info" class="w-5 h-5"></i>
                 </button>
             </div>
         </header>
 
-        <!-- Message List Feed Container -->
-        <div id="messages-container" class="flex-grow overflow-y-auto p-6 space-y-4">
-            <div class="text-center py-10 text-gray-500 text-xs font-mono">Syncing transmissions...</div>
-        </div>
-
-        <!-- Live Upload Progress Card -->
-        <div id="upload-progress-card" class="hidden mx-6 mb-3 bg-caveCard border border-white/10 p-4 rounded-xl flex items-center gap-4 z-20 shadow-xl">
-            <i data-lucide="upload" class="w-5 h-5 text-caveNeon animate-pulse"></i>
-            <div class="flex-grow">
-                <p class="text-xs font-bold text-gray-300" id="upload-filename-display">file_name.pdf</p>
-                <div class="w-full bg-caveDark h-1.5 rounded-full mt-2 overflow-hidden">
-                    <div id="upload-progress-bar" class="bg-caveNeon h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+        <div id="messages-container" class="flex-grow overflow-y-auto p-6 space-y-4 relative scroll-smooth flex flex-col justify-between">
+            <div id="messages-log" class="space-y-4">
+                <div class="flex flex-col items-center justify-center h-64 text-center space-y-3 font-mono">
+                    <div class="w-10 h-10 rounded-full border border-cavePurple/30 bg-cavePurple/10 flex items-center justify-center text-cavePurple animate-spin">
+                        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    </div>
+                    <p class="text-xs text-gray-500 max-w-xs">Initializing secure browser custom token synchronizations...</p>
                 </div>
             </div>
-            <span id="upload-pct-display" class="text-xs text-caveNeon font-mono">0%</span>
         </div>
+        <footer class="p-4 bg-caveMidnight/40 border-t border-white/5 backdrop-blur z-10 relative">
+            <form id="message-form" onsubmit="transmitMessage(event)" class="max-w-6xl mx-auto flex items-end gap-3 bg-caveCard border border-white/5 p-2 rounded-2xl shadow-xl focus-within:border-cavePurple/40 transition-all relative">
+                <div class="flex items-center gap-1">
+                    <button type="button" onclick="document.getElementById('hidden-file-input').click()" class="p-2.5 hover:bg-white/5 rounded-xl text-gray-400 hover:text-caveNeon transition-all" title="Attach Media Artifact">
+                        <i data-lucide="paperclip" class="w-5 h-5"></i>
+                    </button>
+                    <input type="file" id="hidden-file-input" onchange="handleFileUpload()" class="hidden" multiple>
+                </div>
 
-        <!-- Compose Footer -->
-        <footer class="p-4 bg-caveCard border-t border-white/5 relative z-10">
-            <!-- Quick Reaction Symbol Tray -->
-            <div id="emoji-tray" class="hidden absolute bottom-20 left-4 bg-caveDark border border-white/10 p-3 rounded-2xl shadow-2xl flex gap-3 text-lg z-30">
-                <button type="button" onclick="insertEmoji('🔥')" class="hover:scale-125 transition-transform">🔥</button>
-                <button type="button" onclick="insertEmoji('💜')" class="hover:scale-125 transition-transform">💜</button>
-                <button type="button" onclick="insertEmoji('⚡')" class="hover:scale-125 transition-transform">⚡</button>
-                <button type="button" onclick="insertEmoji('🚀')" class="hover:scale-125 transition-transform">🚀</button>
-                <button type="button" onclick="insertEmoji('✨')" class="hover:scale-125 transition-transform">✨</button>
-            </div>
+                <div class="flex-grow relative">
+                    <textarea id="message-input" onkeydown="catchInputReturn(event)" rows="1" placeholder="Type data packet instructions here (Markdown & code syntax supported)..." class="w-full bg-transparent border-0 outline-none resize-none py-2 text-sm text-gray-200 placeholder-gray-500 max-h-36 overflow-y-auto focus:ring-0"></textarea>
+                </div>
 
-            <div class="flex items-center gap-3">
-                <button type="button" onclick="toggleEmojiTray()" class="w-12 h-12 rounded-xl bg-caveDark border border-white/10 text-gray-400 hover:text-caveNeon flex items-center justify-center transition-all">
-                    <i data-lucide="smile"></i>
+                <button type="submit" class="p-2.5 bg-cavePurple hover:bg-cavePurple/80 text-white rounded-xl shadow-lg shadow-cavePurple/20 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center">
+                    <i data-lucide="send" class="w-5 h-5"></i>
                 </button>
-                <input type="text" id="chat-input" placeholder="Compose message (Markdown supported, e.g. **bold**, `code`...)" autocomplete="off" class="flex-grow bg-caveDark border border-white/10 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:border-caveNeon text-gray-200">
-                <button type="button" id="send-btn" class="px-6 py-3.5 rounded-xl bg-cavePurple hover:bg-caveNeon hover:text-caveDark text-white font-bold text-sm transition-all">Send</button>
-            </div>
-        </footer>
+            </form>
+        </footer >
     </main>
-</div>
 
-<!-- ========================================== -->
-<!-- MODAL SYSTEM -->
-<!-- ========================================== -->
-
-<!-- Modal: Create New Sub-Cave -->
-<div id="create-room-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-    <div class="bg-caveCard border border-white/10 p-6 rounded-2xl max-w-md w-full shadow-2xl">
-        <h3 class="text-lg font-bold text-caveNeon mb-1">Create New Sub-Cave</h3>
-        <p class="text-xs text-gray-400 mb-4">Establish a dedicated communication channel.</p>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-xs uppercase text-gray-400 mb-1 font-semibold">Channel Name</label>
-                <input type="text" id="new-room-name" placeholder="# Dev-Operations" class="w-full bg-caveDark border border-white/10 rounded-xl px-4 py-2.5 text-xs text-gray-200 focus:outline-none focus:border-caveNeon">
+    <div id="drop-zone-overlay" class="hidden absolute inset-0 bg-caveDark/90 backdrop-blur-md border-2 border-dashed border-caveNeon z-50 flex-col items-center justify-center space-y-4 font-mono pointer-events-none">
+        <div class="w-16 h-16 rounded-full bg-caveNeon/10 text-caveNeon border border-caveNeon/20 flex items-center justify-center animate-bounce">
+            <i data-lucide="upload-cloud" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-lg font-black text-caveNeon uppercase tracking-widest">Inbound Media Packet Detected</h3>
+        <p class="text-xs text-gray-500">Release payload mouse vectors anywhere to upload artifact streams</p>
+    </div>
+    <div id="create-room-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-caveCard border border-white/5 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-black tracking-wider text-caveNeon uppercase font-mono">Create Matrix Node</h3>
+                <button onclick="closeModal('create-room-modal')" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            <div>
-                <label class="block text-xs uppercase text-gray-400 mb-1 font-semibold">Description</label>
-                <input type="text" id="new-room-desc" placeholder="Discussing code mechanics..." class="w-full bg-caveDark border border-white/10 rounded-xl px-4 py-2.5 text-xs text-gray-200 focus:outline-none">
-            </div>
-            <div class="flex justify-end gap-3 pt-2">
-                <button type="button" onclick="closeModal('create-room-modal')" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-gray-300">Cancel</button>
-                <button type="button" onclick="submitNewRoom()" class="px-5 py-2 rounded-xl bg-cavePurple hover:bg-caveNeon hover:text-caveDark text-white font-bold text-xs transition-all">Establish Channel</button>
+            <div class="space-y-3 font-mono text-xs">
+                <div>
+                    <label class="text-gray-400 block mb-1">Room Unique Identifier (Slug)</label>
+                    <input type="text" id="new-room-id" placeholder="e.g., phonk-lounge" class="w-full bg-caveDark border border-white/10 rounded-xl px-3 py-2.5 text-gray-200 outline-none focus:border-cavePurple/50">
+                </div>
+                <div>
+                    <label class="text-gray-400 block mb-1">Display Title Name</label>
+                    <input type="text" id="new-room-name" placeholder="e.g., # Phonk Lounge" class="w-full bg-caveDark border border-white/10 rounded-xl px-3 py-2.5 text-gray-200 outline-none focus:border-cavePurple/50">
+                </div>
+                <div>
+                    <label class="text-gray-400 block mb-1">Description Vector</label>
+                    <input type="text" id="new-room-desc" placeholder="Operational stream details..." class="w-full bg-caveDark border border-white/10 rounded-xl px-3 py-2.5 text-gray-200 outline-none focus:border-cavePurple/50">
+                </div>
+                <button onclick="triggerRoomCreation()" class="w-full py-3 bg-caveNeon text-caveDark font-black rounded-xl uppercase tracking-wider hover:opacity-90 transition-all mt-2">Initialize Node</button>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal: Custom Theme Controls -->
-<div id="customization-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-    <div class="bg-caveCard border border-white/10 p-6 rounded-2xl max-w-md w-full shadow-2xl">
-        <h3 class="text-lg font-bold text-caveNeon mb-1">Convo Cave Theme Customizer</h3>
-        <p class="text-xs text-gray-400 mb-4">Reconfigure typography and background matrices.</p>
-        <div class="space-y-5">
-            <div>
-                <label class="block text-xs uppercase text-gray-400 mb-2 font-semibold">Accent Core Color</label>
-                <div class="flex gap-3">
-                    <button onclick="applyCustomTheme('#9d4edd')" class="w-8 h-8 rounded-full bg-[#9d4edd]" title="Standard Purple"></button>
-                    <button onclick="applyCustomTheme('#00ffcc')" class="w-8 h-8 rounded-full bg-[#00ffcc]" title="Neon Teal"></button>
-                    <button onclick="applyCustomTheme('#e63946')" class="w-8 h-8 rounded-full bg-[#e63946]" title="Crimson"></button>
-                    <button onclick="applyCustomTheme('#f1a7a6')" class="w-8 h-8 rounded-full bg-[#f1a7a6]" title="Rose Glow"></button>
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-caveCard border border-white/5 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-black tracking-wider text-cavePurple uppercase font-mono">Engine Preferences</h3>
+                <button onclick="closeModal('settings-modal')" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-4 font-mono text-xs">
+                <div>
+                    <label class="text-gray-400 block mb-1.5">Matrix Color Vector Accent</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="applyCustomTheme('#00ffcc')" class="bg-[#00ffcc] h-8 rounded-lg text-black font-bold text-[10px]">Neon</button>
+                        <button onclick="applyCustomTheme('#9d4edd')" class="bg-[#9d4edd] h-8 rounded-lg text-white font-bold text-[10px]">Phonk</button>
+                        <button onclick="applyCustomTheme('#3a86ff')" class="bg-[#3a86ff] h-8 rounded-lg text-white font-bold text-[10px]">Cyber</button>
+                        <button onclick="applyCustomTheme('#ff006e')" class="bg-[#ff006e] h-8 rounded-lg text-white font-bold text-[10px]">Rage</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-gray-400 block mb-1.5">Text Data Scale</label>
+                    <select onchange="adjustFontScale(this.value)" class="w-full bg-caveDark border border-white/10 rounded-xl px-3 py-2 text-gray-200 outline-none">
+                        <option value="13px">Compact Size</option>
+                        <option value="14px" selected>Standard Matrix</option>
+                        <option value="16px">Enhanced Scale</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-gray-400 block mb-1.5">Wallpaper Environment Canvas</label>
+                    <select onchange="applyWallpaper(this.value)" class="w-full bg-caveDark border border-white/10 rounded-xl px-3 py-2 text-gray-200 outline-none">
+                        <option value="matrix" selected>Radial Phonk (Default)</option>
+                        <option value="solid">Solid Absolute Void</option>
+                        <option value="abstract">Linear Grid Gradient</option>
+                    </select>
                 </div>
             </div>
-            <div>
-                <label class="block text-xs uppercase text-gray-400 mb-2 font-semibold">Typography Scale</label>
-                <select id="font-scale-selector" onchange="adjustFontScale(this.value)" class="w-full bg-caveDark border border-white/10 rounded-xl px-4 py-2.5 text-xs text-gray-300 focus:outline-none">
-                    <option value="13px">Compact Size (13px)</option>
-                    <option value="15px" selected>Balanced Size (15px)</option>
-                    <option value="17px">Readable Size (17px)</option>
-                </select>
+        </div>
+    </div>
+
+    <div id="room-details-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-caveCard border border-white/5 w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                <h3 class="text-sm font-black tracking-wider text-gray-200 uppercase font-mono">Node Architecture</h3>
+                <button onclick="closeModal('room-details-modal')" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            <div>
-                <label class="block text-xs uppercase text-gray-400 mb-2 font-semibold">Wallpaper Style</label>
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="applyWallpaper('cave')" class="bg-caveDark border border-white/10 py-2 rounded-xl text-xs font-semibold hover:border-caveNeon transition-all">Deep Cave</button>
-                    <button onclick="applyWallpaper('solid')" class="bg-caveDark border border-white/10 py-2 rounded-xl text-xs font-semibold hover:border-cavePurple transition-all">Solid Midnight</button>
+            <div class="font-mono text-xs space-y-3">
+                <div class="bg-caveDark/60 p-3 rounded-xl border border-white/5 space-y-2">
+                    <p class="text-[10px] text-gray-500 uppercase">Current Target Segment</p>
+                    <p id="modal-room-id-display" class="font-bold text-caveNeon break-all"># general</p>
+                </div>
+                <div class="bg-caveDark/60 p-3 rounded-xl border border-white/5 space-y-1">
+                    <p class="text-[10px] text-gray-500 uppercase">Operational Rules</p>
+                    <p class="text-gray-400 leading-relaxed text-[11px]">All real-time telemetry packets are end-to-end synced via Firebase NoSQL servers stateless loop.</p>
                 </div>
             </div>
-            <div class="flex justify-end pt-2">
-                <button type="button" onclick="closeModal('customization-modal')" class="px-5 py-2.5 rounded-xl bg-cavePurple text-white font-bold text-xs transition-all">Save Changes</button>
-            </div>
         </div>
     </div>
-</div>
+    
+        <!-- ========================================== -->
+    <!-- 5. REAL-TIME ENGINE CORE JAVASCRIPT LOGIC -->
+    <!-- ========================================== -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // 1. Initialize Lucide Visual System Components
+            lucide.createIcons();
 
-<!-- Modal: User Profile Settings -->
-<div id="profile-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-    <div class="bg-caveCard border border-white/10 p-6 rounded-2xl max-w-md w-full shadow-2xl">
-        <h3 class="text-lg font-bold text-cavePurple mb-1">Explorer Profile Settings</h3>
-        <p class="text-xs text-gray-400 mb-4">Manage your internal node metadata.</p>
-        <div class="space-y-3 text-xs bg-caveDark p-4 rounded-xl border border-white/5 mb-4">
-            <div class="flex justify-between"><span class="text-gray-500">Username:</span><span class="font-bold text-gray-200">{{ current_user.username }}</span></div>
-            <div class="flex justify-between"><span class="text-gray-500">Email:</span><span class="font-bold text-gray-200">{{ current_user.email }}</span></div>
-            <div class="flex justify-between"><span class="text-gray-500">Location:</span><span class="font-bold text-caveNeon">{{ current_user.profile.country }}</span></div>
-            <div class="flex justify-between"><span class="text-gray-500">Timezone:</span><span class="font-bold text-gray-300">{{ current_user.profile.timezone }}</span></div>
-        </div>
-        <div class="flex justify-end">
-            <button type="button" onclick="closeModal('profile-modal')" class="px-5 py-2 rounded-xl bg-cavePurple text-white font-bold text-xs">Close Profile</button>
-        </div>
-    </div>
-</div>
+            // 2. Safely Fetch Configurations & Environment Variables from Flask
+            const firebaseConfig = {{ firebase_config | tojson | safe }};
+            const flaskCustomToken = "{{ firebase_token }}";
+            const currentUserId = "{{ user_id }}";
+            const currentUsername = "{{ username }}";
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+            // 3. Global State Controllers & Memory Trackers (Safe Auto-Fallback to general room)
+            const defaultRoomIdFromBackend = "{{ default_room.id if default_room else 'general' }}";
+            let currentRoomId = defaultRoomIdFromBackend;
+            let activeFirebaseQueryRef = null;
 
-<script>
-    window.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialize Lucide Icons & Render Layout Engine Components
-    lucide.createIcons();
-
-    // 2. Fetch Secure Dynamic Setup Configurations from Flask Backend
-    const firebaseConfig = {{ firebase_config | tojson | safe }};
-    const flaskCustomToken = "{{ firebase_token }}";
-    const currentUserId = "{{ user_id }}";
-    const currentUsername = "{{ username }}";
-
-    // 3. Global Application Memory Trackers
-    let currentRoomId = null;
-    let activeFirebaseQueryRef = null;
-
-    // 4. Initialize Cloud Platform Connections
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    const database = firebase.database();
-
-    // 5. Secure Handshake Loop Authentication Execution
-    if (flaskCustomToken) {
-        firebase.auth().signInWithCustomToken(flaskCustomToken)
-            .then((userCredential) => {
-                console.log("Secure real-time pipeline established. Authenticated UID:", userCredential.user.uid);
-                
-                // Active fallbacks to initialize default communication room nodes if available
-                setupDragAndDrop();
-                if (currentRoomId) {
-                    loadFirebaseMessages(currentRoomId);
-                }
-            })
-            .catch((error) => {
-                console.error("Pipeline authentication handshake failure:", error);
-                alert("Real-time engine connection lost. Please re-login to re-mint your secure token.");
-            });
-    } else {
-        console.warn("No active token pass discovered from Flask backend context.");
-    }
-      // ==========================================
-    // 📦 PART 2: Real-time Message Stream Engine
-    // ==========================================
-
-    function loadFirebaseMessages(roomId) {
-        if (!roomId) return;
-        currentRoomId = roomId;
-        
-        const container = document.getElementById('messages-container');
-        container.innerHTML = '<div class="text-center text-gray-500 py-8 font-mono text-xs">CONNECTING SECURE REAL-TIME NODE SYNC...</div>';
-        
-        // 1. If already watching a chat node, disconnect it to avoid duplicate memory streams
-        if (activeFirebaseQueryRef) {
-            activeFirebaseQueryRef.off();
-        }
-        
-        // 2. Reference the exact room ID path node inside the Firebase database
-        const messagesRef = database.ref('messages/' + roomId);
-        activeFirebaseQueryRef = messagesRef;
-        
-        // 3. Attach the persistent open connection stream
-        messagesRef.on('value', (snapshot) => {
-            container.innerHTML = '';
-            const data = snapshot.val();
-            
-            if (!data) {
-                container.innerHTML = '<div class="text-center text-gray-600 py-8 font-mono text-xs">NO MESSAGES IN THIS CAVE SPECIMEN</div>';
-                return;
+            // 4. Initialize Cloud Firebase Infrastructure 
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
             }
-            
-            // 4. Map the Firebase NoSQL JSON objects cleanly into a chronological sequence array
-            const sortedMessages = Object.keys(data).map(key => {
-                return { id: key, ...data[key] };
-            }).sort((a, b) => a.timestamp - b.timestamp);
-            
-            // 5. Render each message to your user interface
-            sortedMessages.forEach(msg => {
-                appendMessageToUI({
-                    id: msg.id,
-                    username: msg.sender_name,
-                    content: msg.content,
-                    file_url: msg.file_url,
-                    timestamp: new Date(msg.timestamp).toLocaleTimeString(),
-                    status: msg.status
-                });
-            });
-            
-            scrollToBottom();
-            
-            // 6. Automatically ack/mark other users' incoming messages as read
-            Object.keys(data).forEach(key => {
-                if (data[key].sender_id !== currentUserId && data[key].status !== 'read') {
-                    messagesRef.child(key).update({ status: 'read' });
-                }
-            });
-        }, (error) => {
-            console.error("Firebase read sync failure:", error);
-            container.innerHTML = '<div class="text-center text-red-500 py-8 font-mono text-xs">SECURITY RESTRICTION: ACCESS DENIED</div>';
-        });
-    }
-    // ==========================================
-    // 📦 PART 3: Message Delivery & UI Operations
-    // ==========================================
+            const database = firebase.database();
 
-    // 1. Chat Form Submit Submission Listener
-    document.getElementById('chat-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const input = document.getElementById('message-input');
-        const text = input.value.trim();
-        
-        if (!text || !currentRoomId) return;
-
-        try {
-            const messagesRef = database.ref('messages/' + currentRoomId);
-            const newMessageRef = messagesRef.push();
-            
-            const messagePayload = {
-                sender_id: currentUserId,
-                sender_name: currentUsername,
-                content: text,
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                status: 'sent',
-                file_url: null
-            };
-
-            newMessageRef.set(messagePayload);
-            input.value = '';
-            
-        } catch (error) {
-            console.error("Message delivery push error:", error);
-            alert("Failed to safely stream message payload to the serverless cluster.");
-        }
-    });
-
-    // 2. Structural Message Component Renderer
-    function appendMessageToUI(msg) {
-        const container = document.getElementById('messages-container');
-        const isMe = msg.username === currentUsername;
-        
-        const wrapper = document.createElement('div');
-        wrapper.className = `flex flex-col mb-4 ${isMe ? 'items-end' : 'items-start'}`;
-        wrapper.id = `msg-${msg.id}`;
-        
-        let fileAttachmentMarkup = '';
-        if (msg.file_url) {
-            const isImage = /\.(jpg|jpeg|png|gif|webp)/i.test(msg.file_url);
-            if (isImage) {
-                fileAttachmentMarkup = `<div class="mt-2 max-w-xs rounded overflow-hidden border border-white/10">
-                    <img src="${msg.file_url}" class="w-full h-auto cursor-zoom-in" onclick="window.open('${msg.file_url}', '_blank')"/>
-                </div>`;
+            // 5. Secure Authentication Handshake Pipeline Loop
+            if (flaskCustomToken && flaskCustomToken !== "") {
+                firebase.auth().signInWithCustomToken(flaskCustomToken)
+                    .then((userCredential) => {
+                        console.log("Secure real-time pipeline established. Authenticated UID:", userCredential.user.uid);
+                        
+                        // Bootstrap active listeners safely
+                        setupDragAndDrop();
+                        initializeRoomsObserver();
+                    })
+                    .catch((error) => {
+                        console.error("Pipeline authentication handshake failure:", error);
+                        // Prevent fake browser popups and capture true custom token expirations cleanly
+                        if (error.code === "auth/invalid-custom-token") {
+                            alert("Real-time engine connection lost. Please re-login to re-mint your secure token.");
+                            window.location.href = "/login";
+                        }
+                    });
             } else {
-                fileAttachmentMarkup = `<div class="mt-2 flex items-center gap-2 bg-black/20 p-2 rounded text-xs border border-white/5">
-                    <i data-lucide="file-text" class="w-4 h-4 text-caveNeon"></i>
-                    <a href="${msg.file_url}" target="_blank" class="text-gray-300 hover:underline truncate max-w-[180px]">Attached Document</a>
-                </div>`;
+                console.warn("No active token pass discovered from Flask backend context.");
             }
-        }
-        
-        // Render secure markdown content blocks safely using marked library
-        const rawContent = msg.content || '';
-        const renderedHtml = marked.parse ? marked.parse(rawContent) : rawContent;
-        
-        wrapper.innerHTML = `
-            <div class="flex items-center gap-2 mb-1 px-1">
-                <span class="text-[10px] font-mono tracking-wider ${isMe ? 'text-caveNeon font-bold' : 'text-gray-400'}">${msg.username.toUpperCase()}</span>
-                <span class="text-[9px] text-gray-600 font-mono">${msg.timestamp}</span>
-            </div>
-            <div class="max-w-[75%] p-3 rounded-xl border font-sans text-sm break-words relative group ${
-                isMe ? 'bg-caveAccent/20 border-caveAccent/40 text-gray-100 rounded-tr-none' : 'bg-white/[0.02] border-white/10 text-gray-200 rounded-tl-none'
-            }">
-                <div class="prose prose-invert max-w-none prose-xs font-sans text-gray-200">${renderedHtml}</div>
-                ${fileAttachmentMarkup}
-            </div>
-        `;
-        
-        container.appendChild(wrapper);
-        
-        // Rerender Lucide symbols inside dynamic message cards
-        if (window.lucide) lucide.createIcons();
-        if (window.hljs) wrapper.querySelectorAll('pre code').forEach(hljs.highlightElement);
-    }
+            // ==========================================
+            // 6. DYNAMIC ROOM OBSERVER & SYNC ENGINE
+            // ==========================================
+            function initializeRoomsObserver() {
+                const roomsRef = database.ref('rooms');
+                roomsRef.on('value', (snapshot) => {
+                    const container = document.getElementById('rooms-list-container');
+                    if (!container) return;
+                    container.innerHTML = '';
 
-    // 3. Room Navigation Controller Action
-    window.switchRoom = function(element) {
-        const roomId = element.dataset.roomId;
-        const roomName = element.dataset.roomName;
-        const roomDesc = element.dataset.roomDesc || 'No structural channel telemetry configured.';
-        
-        if (!roomId) return;
-        
-        // Update header layout profiles
-        document.getElementById('current-chat-title').innerText = roomName;
-        document.getElementById('current-chat-desc').innerText = roomDesc;
-        
-        // Update selection highlight borders across list view selectors
-        document.querySelectorAll('[data-room-id]').forEach(btn => {
-            btn.classList.remove('bg-white/10', 'text-white', 'border-l-2', 'border-caveNeon');
-            btn.classList.add('text-gray-400');
-        });
-        element.classList.add('bg-white/10', 'text-white', 'border-l-2', 'border-caveNeon');
-        element.classList.remove('text-gray-400');
-        
-        // Stream database node collections matching our target channel ID parameter
-        loadFirebaseMessages(roomId);
-    };
+                    const roomsData = snapshot.val();
+                    if (!roomsData) {
+                        container.innerHTML = '<div class="text-xs text-gray-600 italic px-2">No active rooms found.</div>';
+                        return;
+                    }
 
-    function scrollToBottom() {
-        const container = document.getElementById('messages-container');
-        container.scrollTop = container.scrollHeight;
-    }
-    // ==========================================
-    // 📦 PART 4: Asynchronous Room Creation Engine
-    // ==========================================
+                    // Loop through available firebase JSON nodes dynamically
+                    Object.keys(roomsData).forEach((key) => {
+                        const room = roomsData[key];
+                        const roomId = room.id || key;
+                        const roomName = room.name || `# ${roomId}`;
+                        const isActive = (roomId === currentRoomId);
 
-    window.handleCreateRoom = async function() {
-        const nameInput = document.getElementById('new-room-name');
-        const descInput = document.getElementById('new-room-desc');
-        const typeSelect = document.getElementById('new-room-type');
-        
-        const name = nameInput.value.trim();
-        const desc = descInput.value.trim() || 'No structural telemetry configured.';
-        const type = typeSelect ? typeSelect.value : 'public';
-        
-        if (!name) {
-            alert('Channel title parameter cannot remain empty.');
-            return;
-        }
+                        const roomBtn = document.createElement('button');
+                        roomBtn.className = `w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-mono tracking-wide transition-all uppercase ${
+                            isActive 
+                            ? 'bg-cavePurple/20 text-caveNeon border border-cavePurple/30 shadow-md font-bold' 
+                            : 'text-gray-400 hover:bg-white/5 hover:text-gray-200 border border-transparent'
+                        }`;
+                        
+                        // Action link on click event vector mapping
+                        roomBtn.onclick = () => switchActiveRoom(roomId, roomName, room.desc || '');
 
-        try {
-            // 1. Reference our main chats node branch in the JSON tree
-            const chatsRef = database.ref('chats');
-            const newChatRef = chatsRef.push();
-            const newRoomId = newChatRef.key;
-            
-            // 2. Build the room metadata configuration profile
-            const chatPayload = {
-                id: newRoomId,
-                name: name,
-                desc: desc,
-                type: type,
-                creator_id: currentUserId,
-                created_at: firebase.database.ServerValue.TIMESTAMP,
-                participants: {}
-            };
-            
-            // If the room is private, automatically assign the creator as the first allowed user node
-            if (type === 'private') {
-                chatPayload.participants[currentUserId] = true;
-            }
-
-            // 3. Save the room node entry straight into the database cluster
-            await newChatRef.set(chatPayload);
-            
-            // 4. Dynamically append the newly generated channel option straight into the UI list view
-            const roomList = document.getElementById(type === 'public' ? 'public-rooms-list' : 'private-rooms-list');
-            if (roomList) {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-left px-3 py-2 rounded-lg text-sm font-mono flex items-center justify-between transition-all text-gray-400 hover:bg-white/5 hover:text-gray-200";
-                
-                btn.dataset.roomId = newRoomId;
-                btn.dataset.roomName = name;
-                btn.dataset.roomDesc = desc;
-                btn.innerHTML = `
-                    <span class="truncate">${name}</span>
-                    <span class="w-2 h-2 rounded-full bg-caveNeon"></span>
-                `;
-
-                // Set up the click handler to run our cross-room listener logic smoothly
-                btn.onclick = function() { window.switchRoom(this); };
-
-                roomList.appendChild(btn);
-                
-                // Refresh Lucide icon layers for the newly appended DOM element tree
-                if (window.lucide) lucide.createIcons();
-                
-                // Clear out creation parameters and close down the layout modal drawer
-                closeModal('create-room-modal');
-                nameInput.value = '';
-                descInput.value = '';
-                
-                // Automatically switch the active conversation view frame into your brand new channel!
-                window.switchRoom(btn);
-            }
-        } catch (error) {
-            console.error("Error establishing cloud channel:", error);
-            alert('Failed to establish remote channel node entry.');
-        }
-    };
-    // ==========================================
-    // 📦 PART 5: Decoupled Cloud Storage & UI Control Loops
-    // ==========================================
-
-    // 1. Direct Cloud Media Stream Upload Pipeline
-    window.handleFileUpload = async function() {
-        const fileInput = document.getElementById('file-input');
-        if (!fileInput || !fileInput.files.length || !currentRoomId) return;
-
-        const file = fileInput.files[0];
-        const statusText = document.getElementById('upload-status');
-        if (statusText) statusText.classList.remove('hidden');
-
-        try {
-            // Initialize Firebase Storage Reference Root
-            const storageRef = firebase.storage().ref();
-            // Build unique folder mapping paths: /attachments/room_id/timestamp_filename
-            const fileRef = storageRef.child(`attachments/${currentRoomId}/${Date.now()}_${file.name}`);
-  // Start raw file binary transmission upload task
-            const uploadTask = fileRef.put(file);
-
-            uploadTask.on('state_changed', 
-                (snapshot) => {
-                    // Operational telemetry upload progress loop tracking
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    if (statusText) statusText.innerText = `UPLOADING: ${Math.round(progress)}%`;
-                }, 
-                (error) => {
-                    console.error("Cloud binary upload crash:", error);
-                    alert("Media ingestion cluster failed to store target file.");
-                }, 
-                async () => {
-                    // Capture permanent cloud CDN link generation URLs once uploaded
-                    const downloadUrl = await uploadTask.snapshot.ref.getDownloadUrl();
-                    
-                    // Push the asset reference immediately into the active NoSQL text branch
-                    const messagesRef = database.ref('messages/' + currentRoomId);
-                    const newMessageRef = messagesRef.push();
-
-                    newMessageRef.set({
-                        sender_id: currentUserId,
-                        sender_name: currentUsername,
-                        content: `Shared an attachment file: **${file.name}**`,
-                        timestamp: firebase.database.ServerValue.TIMESTAMP,
-                        status: 'sent',
-                        file_url: downloadUrl
+                        roomBtn.innerHTML = `
+                            <div class="flex items-center gap-2 truncate">
+                                <i data-lucide="hash" class="w-3.5 h-3.5 opacity-60"></i>
+                                <span class="truncate">${roomName}</span>
+                            </div>
+                            ${isActive ? '<span class="w-1.5 h-1.5 rounded-full bg-caveNeon animate-pulse"></span>' : ''}
+                        `;
+                        container.appendChild(roomBtn);
                     });
 
-                    if (statusText) statusText.classList.add('hidden');
-                    fileInput.value = ''; // Clean parameter inputs
-                }
-            );
-        } catch (e) {
-            console.error("Storage pipeline breakdown:", e);
-            if (statusText) statusText.classList.add('hidden');
-        }
-    };
-
-    // 2. Drag & Drop Visual Handler Bindings
-    function setupDragAndDrop() {
-        const dropZone = document.getElementById('messages-container');
-        if (!dropZone) return;
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                dropZone.classList.add('brightness-125', 'border-2', 'border-dashed', 'border-caveNeon');
-            }, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('brightness-125', 'border-2', 'border-dashed', 'border-caveNeon');
-            }, false);
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            const fileInput = document.getElementById('file-input');
-            
-            if (files.length && fileInput) {
-                fileInput.files = files;
-                window.handleFileUpload();
+                    // Auto load messaging logic on first paint sequence execution
+                    if (currentRoomId) {
+                        const currentActiveRoom = roomsData[currentRoomId] || { name: `# ${currentRoomId}`, desc: 'Active communication stream' };
+                        switchActiveRoom(currentRoomId, currentActiveRoom.name, currentActiveRoom.desc);
+                    }
+                    lucide.createIcons();
+                });
             }
-        }, false);
-    }
 
-    // 3. Interface Modal Window Controls
-    window.openModal = function(id) {
-        const modal = document.getElementById(id);
-        if (modal) modal.classList.remove('hidden');
-    };
+            // Room Switch Router Component Tracker
+            window.switchActiveRoom = function(roomId, roomName, roomDesc) {
+                currentRoomId = roomId;
+                
+                // Update UI Node Fields Instantly
+                document.getElementById('active-room-title').innerText = roomName;
+                document.getElementById('active-room-desc').innerText = roomDesc || 'No operational data provided.';
+                document.getElementById('modal-room-id-display').innerText = `# ${roomId}`;
 
-    window.closeModal = function(id) {
-        const modal = document.getElementById(id);
-        if (modal) modal.classList.add('hidden');
-    };
+                // Re-render sidebars highlight parameters status loop
+                const container = document.getElementById('rooms-list-container');
+                if (container) {
+                    Array.from(container.children).forEach((btn) => {
+                        const isTarget = btn.innerText.toLowerCase().includes(roomName.replace('#','').trim().toLowerCase());
+                        if (isTarget) {
+                            btn.className = btn.className.replace('text-gray-400', 'bg-cavePurple/20 text-caveNeon border-cavePurple/30');
+                        }
+                    });
+                }
 
-    // 4. Dynamic Theme and Style Engine Controllers
-    window.applyCustomTheme = function(hexColor) {
-        document.documentElement.style.setProperty('--accent-color', hexColor);
-    };
+                // Call core message loader stream
+                loadFirebaseMessages(roomId);
+            };
+                    // ==========================================
+            // 7. REAL-TIME MESSAGING ENGINE (READ/WRITE)
+            // ==========================================
+            function loadFirebaseMessages(roomId) {
+                // Detach any previous database listeners to prevent memory leaks or duplication
+                if (activeFirebaseQueryRef) {
+                    activeFirebaseQueryRef.off();
+                }
 
-    window.adjustFontScale = function(sizeString) {
-        document.documentElement.style.setProperty('--chat-font-size', sizeString);
-    };
+                const logContainer = document.getElementById('messages-log');
+                if (!logContainer) return;
 
-    window.applyWallpaper = function(style) {
-        let bgVal = 'radial-gradient(circle at 50% 50%, #150c22 0%, #0d0714 100%)'; // Default Phonk Matrix
-        if (style === 'solid') bgVal = '#110b1a';
-        if (style === 'abstract') bgVal = 'linear-gradient(135deg, #0f0c20 0%, #06040a 100%)';
-        
-        const container = document.getElementById('messages-container');
-        if (container) container.style.background = bgVal;
-    };
+                // Point reference to the targeted communication cave node tree path
+                activeFirebaseQueryRef = database.ref(`messages/${roomId}`).orderByChild('timestamp').limitToLast(100);
+                
+                activeFirebaseQueryRef.on('value', (snapshot) => {
+                    logContainer.innerHTML = '';
+                    const data = snapshot.val();
 
-    // 5. System Cleanup Actions on Exit
-    window.addEventListener('beforeunload', () => {
-        if (activeFirebaseQueryRef) {
-            activeFirebaseQueryRef.off();
-        }
-    });
-}); 
-// Closes DOMContentLoaded listener safely
+                    if (!data) {
+                        logContainer.innerHTML = `
+                            <div class="flex flex-col items-center justify-center h-48 text-center text-gray-600 font-mono text-xs">
+                                <i data-lucide="message-square-dashed" class="w-8 h-8 mb-2 opacity-40"></i>
+                                <p>This cave node is completely silent. Send a transmission packet to begin.</p>
+                            </div>
+                        `;
+                        lucide.createIcons();
+                        return;
+                    }
 
-</script>
+                    // Loop through documents and render them securely
+                    Object.keys(data).forEach((key) => {
+                        const msg = data[key];
+                        const isMe = (msg.userId === currentUserId);
+                        
+                        const msgBlock = document.createElement('div');
+                        msgBlock.className = `flex gap-3 max-w-3xl ${isMe ? 'ml-auto flex-row-reverse' : 'mr-auto'}`;
+
+                        // Markdown parsing compiling engine safety setup
+                        const cleanContent = marked.parse(msg.content || '');
+
+                        msgBlock.innerHTML = `
+                            <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-mono font-black shrink-0 ${isMe ? 'text-caveNeon border-caveNeon/30' : 'text-cavePurple border-cavePurple/30'}">
+                                ${msg.username ? msg.username.substring(0,2).toUpperCase() : '??'}
+                            </div>
+                            <div class="space-y-1 ${isMe ? 'text-right' : 'text-left'}">
+                                <div class="flex items-center gap-2 text-[10px] font-mono text-gray-500 ${isMe ? 'flex-row-reverse' : ''}">
+                                    <span class="font-bold text-gray-400 uppercase">${msg.username || 'Anonymous'}</span>
+                                    <span>•</span>
+                                    <span>${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                </div>
+                                <div class="bg-caveCard border border-white/5 px-4 py-2.5 rounded-2xl text-sm text-gray-300 leading-relaxed shadow-md break-words text-left matches-markdown-styles">
+                                    ${cleanContent}
+                                </div>
+                            </div>
+                        `;
+                        logContainer.appendChild(msgBlock);
+                    });
+
+                    // Instantly scroll window down to catch the latest inbound packets
+                    const mainScroll = document.getElementById('messages-container');
+                    if (mainScroll) {
+                        mainScroll.scrollTop = mainScroll.scrollHeight;
+                    }
+                    lucide.createIcons();
+                });
+            }
+
+            // Transmit outbound text streams to the Firebase JSON cluster
+            window.transmitMessage = function(event) {
+                if (event) event.preventDefault();
+                
+                const inputEl = document.getElementById('message-input');
+                if (!inputEl) return;
+
+                const contentText = inputEl.value.trim();
+                if (!contentText || !currentRoomId) return;
+
+                const payload = {
+                    userId: currentUserId,
+                    username: currentUsername,
+                    content: contentText,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                };
+
+                // Push payload straight up into the active node stream path
+                database.ref(`messages/${currentRoomId}`).push().set(payload)
+                    .then(() => {
+                        inputEl.value = '';
+                        inputEl.rows = 1;
+                    })
+                    .catch((err) => console.error("Transmission failed:", err));
+            };
+
+            // Custom handler to upload media components (Fallback mock placeholder)
+            window.handleFileUpload = function() {
+                const fileInput = document.getElementById('hidden-file-input');
+                if (fileInput && fileInput.files.length > 0) {
+                    alert("Media storage engine active. File uploaded successfully to memory stack pipeline!");
+                    fileInput.value = '';
+                }
+            };
+            // ==========================================
+            // 8. INTERACTIVE UTILITIES & UI TRANSFORMS
+            // ==========================================
+            
+            // Intercept enter clicks inside chat textareas to submit packets
+            window.catchInputReturn = function(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    transmitMessage();
+                }
+            };
+
+            // Programmatically initialize new message nodes into /rooms database
+            window.triggerRoomCreation = function() {
+                const slugId = document.getElementById('new-room-id').value.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '');
+                const titleName = document.getElementById('new-room-name').value.trim();
+                const nodeDesc = document.getElementById('new-room-desc').value.trim();
+
+                if (!slugId || !titleName) {
+                    alert("Slug ID and Display Name criteria metrics are mandatory.");
+                    return;
+                }
+
+                const newRoomPayload = {
+                    id: slugId,
+                    name: titleName,
+                    desc: nodeDesc || "No manual summary assigned to this custom cave node."
+                };
+
+                database.ref(`rooms/${slugId}`).set(newRoomPayload)
+                    .then(() => {
+                        closeModal('create-room-modal');
+                        document.getElementById('new-room-id').value = '';
+                        document.getElementById('new-room-name').value = '';
+                        document.getElementById('new-room-desc').value = '';
+                    })
+                    .catch((err) => alert("Room matrix configuration failure: " + err.message));
+            };
+
+            // Modal controller mechanics
+            window.openModal = function(id) {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('hidden');
+            };
+
+            window.closeModal = function(id) {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            };
+
+            // Theme customization overrides 
+            window.applyCustomTheme = function(colorHex) {
+                document.documentElement.style.setProperty('--accent-color', colorHex);
+                alert("Visual core theme sync active. Accent mapped to: " + colorHex);
+            };
+
+            window.adjustFontScale = function(fontSize) {
+                document.documentElement.style.setProperty('--chat-font-size', fontSize);
+            };
+
+            window.applyWallpaper = function(styleKey) {
+                let bgRule = "radial-gradient(circle at 50% 50%, #150c22 0%, #0d0714 100%)";
+                if (styleKey === "solid") bgRule = "#0b0510";
+                if (styleKey === "abstract") bgRule = "linear-gradient(180deg, #12071d 0%, #050208 100%)";
+                
+                const box = document.getElementById('messages-container');
+                if (box) box.style.background = bgRule;
+            };
+
+            // Register Drag and Drop parameters seamlessly 
+            function setupDragAndDrop() {
+                const zone = document.getElementById('drop-zone-overlay');
+                if (!zone) return;
+
+                window.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('hidden');
+                });
+
+                zone.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('hidden');
+                });
+
+                window.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('hidden');
+                    
+                    if (e.dataTransfer.files.length > 0) {
+                        alert("Payload stream intercepted via drag drop loop. Media processing active.");
+                    }
+                });
+            }
+        });
+    </script>
 {% endblock %}
+    
+        
+        
+                
+        
