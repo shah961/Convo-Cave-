@@ -14,11 +14,14 @@ class SessionUser(UserMixin):
         self.is_admin = data.get('is_admin', False)
         self.is_suspended = data.get('is_suspended', False)
         self.is_banned = data.get('is_banned', False)
+        self.phone = data.get('phone', '')
         
-        # 🌟 Added safe fallback structure to prevent template UndefinedErrors (line 260 crash fix)
+        # 🌟 Improved profile structure
         self.profile = {
             "country": data.get("country", "Pakistan"),
-            "bio": data.get("bio", "Secure node active.")
+            "language": data.get("language", "en"),
+            "timezone": data.get("timezone", "PKT"),
+            "bio": data.get("bio", "Go Protocol Active.")
         }
 
 def get_session_user(user_id):
@@ -36,4 +39,3 @@ def get_session_user(user_id):
     except Exception as e:
         print(f"Error loading session user: {e}")
     return None
-    
