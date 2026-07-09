@@ -27,7 +27,7 @@
             {% if messages %}
             <div class="mb-6 space-y-2 font-mono text-xs">
                 {% for message in messages %}
-                <div class="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 px-4 py-3 rounded-xl flex items-center gap-2 animate-pulse">
+                <div class="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 px-4 py-3 rounded-xl flex items-center gap-2">
                     <i data-lucide="info" class="w-4 h-4"></i> {{ message }}
                 </div>
                 {% endfor %}
@@ -39,7 +39,7 @@
             <div class="bg-caveCard border border-white/5 p-6 rounded-2xl flex items-center justify-between shadow-xl">
                 <div class="space-y-1">
                     <h4 class="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Residents</h4>
-                    <p class="text-3xl font-extrabold text-caveNeon">{{ users|length }}</p>
+                    <p class="text-3xl font-extrabold text-caveNeon">{{ users|length if users else 0 }}</p>
                 </div>
                 <div class="w-10 h-10 rounded-xl bg-caveNeon/10 text-caveNeon flex items-center justify-center">
                     <i data-lucide="users" class="w-5 h-5"></i>
@@ -49,7 +49,7 @@
             <div class="bg-caveCard border border-white/5 p-6 rounded-2xl flex items-center justify-between shadow-xl">
                 <div class="space-y-1">
                     <h4 class="text-xs text-gray-400 font-bold uppercase tracking-wider">Active Cave Rooms</h4>
-                    <p class="text-3xl font-extrabold text-cavePurple">{{ rooms|length }}</p>
+                    <p class="text-3xl font-extrabold text-cavePurple">{{ rooms|length if rooms else 0 }}</p>
                 </div>
                 <div class="w-10 h-10 rounded-xl bg-cavePurple/10 text-cavePurple flex items-center justify-center">
                     <i data-lucide="hash" class="w-5 h-5"></i>
@@ -79,42 +79,48 @@
                 </div>
 
                 <div class="overflow-y-auto max-h-[400px] space-y-3" id="user-list-container">
-                    {% for uid, udata in users.items() %}
-                    <div class="flex items-center justify-between bg-caveCard/50 border border-white/5 p-4 rounded-xl user-row" data-username="{{ udata.username.lower() if udata.username else '' }}" data-email="{{ udata.email.lower() if udata.email else '' }}">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-caveDark flex items-center justify-center text-sm font-bold text-caveNeon border border-white/5 uppercase">
-                                {{ udata.username[0] if udata.username else '?' }}
-                            </div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <p class="font-bold text-sm text-gray-100 uppercase">{{ udata.username }}</p>
-                                    {% if udata.is_admin %}
-                                    <span class="bg-yellow-500/10 text-yellow-400 border border-yellow-400/20 text-[9px] px-2 py-0.5 rounded-full font-mono uppercase">Admin</span>
-                                    {% endif %}
-                                    {% if udata.is_banned %}
-                                    <span class="bg-red-500/10 text-red-400 border border-red-500/20 text-[9px] px-2 py-0.5 rounded-full font-mono uppercase">Banned</span>
-                                    {% endif %}
+                    {% if users and users.items %}
+                        {% for uid, udata in users.items() %}
+                            {% if udata is mapping %}
+                            <div class="flex items-center justify-between bg-caveCard/50 border border-white/5 p-4 rounded-xl user-row" data-username="{{ udata.username.lower() if udata.username else '' }}" data-email="{{ udata.email.lower() if udata.email else '' }}">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-caveDark flex items-center justify-center text-sm font-bold text-caveNeon border border-white/5 uppercase">
+                                        {{ udata.username[0] if udata.username else '?' }}
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <p class="font-bold text-sm text-gray-100 uppercase">{{ udata.username or 'Unknown Node' }}</p>
+                                            {% if udata.is_admin %}
+                                            <span class="bg-yellow-500/10 text-yellow-400 border border-yellow-400/20 text-[9px] px-2 py-0.5 rounded-full font-mono uppercase">Admin</span>
+                                            {% endif %}
+                                            {% if udata.is_banned %}
+                                            <span class="bg-red-500/10 text-red-400 border border-red-500/20 text-[9px] px-2 py-0.5 rounded-full font-mono uppercase">Banned</span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="text-[10px] text-gray-500 mt-0.5 font-mono">{{ udata.email or 'N/A' }}</p>
+                                    </div>
                                 </div>
-                                <p class="text-[10px] text-gray-500 mt-0.5 font-mono">{{ udata.email }}</p>
-                            </div>
-                        </div>
 
-                        {% if udata.username != username %}
-                        <form method="POST">
-                            <input type="hidden" name="target_id" value="{{ uid }}">
-                            {% if udata.is_banned %}
-                            <button type="submit" name="action" value="unban_user" class="px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/20 text-emerald-400 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5">
-                                <i data-lucide="user-check" class="w-3.5 h-3.5"></i> Revive
-                            </button>
-                            {% else %}
-                            <button type="submit" name="action" value="ban_user" class="px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5">
-                                <i data-lucide="user-x" class="w-3.5 h-3.5"></i> Terminate
-                            </button>
+                                {% if udata.username != username %}
+                                <form method="POST">
+                                    <input type="hidden" name="target_id" value="{{ uid }}">
+                                    {% if udata.is_banned %}
+                                    <button type="submit" name="action" value="unban_user" class="px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/20 text-emerald-400 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5">
+                                        <i data-lucide="user-check" class="w-3.5 h-3.5"></i> Revive
+                                    </button>
+                                    {% else %}
+                                    <button type="submit" name="action" value="ban_user" class="px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5">
+                                        <i data-lucide="user-x" class="w-3.5 h-3.5"></i> Terminate
+                                    </button>
+                                    {% endif %}
+                                </form>
+                                {% endif %}
+                            </div>
                             {% endif %}
-                        </form>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-xs text-gray-600 italic p-4 text-center">No structural user instances verified in database.</p>
+                    {% endif %}
                 </div>
             </section>
 
@@ -128,26 +134,32 @@
                 </div>
 
                 <div class="overflow-y-auto max-h-[400px] space-y-3">
-                    {% for rid, rdata in rooms.items() %}
-                    <div class="flex items-center justify-between bg-caveCard/50 border border-white/5 p-4 rounded-xl gap-4">
-                        <div class="overflow-hidden space-y-1 max-w-[70%]">
-                            <span class="font-black text-caveNeon text-xs uppercase"># {{ rdata.name or rid }}</span>
-                            <p class="text-[10px] text-gray-500 truncate">{{ rdata.desc or 'No descriptions.' }}</p>
-                            <p class="text-[9px] text-gray-600 font-mono">Slug ID: {{ rid }}</p>
-                        </div>
+                    {% if rooms and rooms.items %}
+                        {% for rid, rdata in rooms.items() %}
+                            {% if rdata is mapping %}
+                            <div class="flex items-center justify-between bg-caveCard/50 border border-white/5 p-4 rounded-xl gap-4">
+                                <div class="overflow-hidden space-y-1 max-w-[70%]">
+                                    <span class="font-black text-caveNeon text-xs uppercase"># {{ rdata.name or rid }}</span>
+                                    <p class="text-[10px] text-gray-500 truncate">{{ rdata.desc or 'No descriptions.' }}</p>
+                                    <p class="text-[9px] text-gray-600 font-mono">Slug ID: {{ rid }}</p>
+                                </div>
 
-                        {% if rid != 'general' %}
-                        <form method="POST" onsubmit="return confirm('Are you sure you want to completely purge this room node and all its chat documents permanently?');">
-                            <input type="hidden" name="target_id" value="{{ rid }}">
-                            <button type="submit" name="action" value="delete_room" class="w-9 h-9 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-xl flex items-center justify-center transition-all" title="Purge Room Node">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
-                        </form>
-                        {% else %}
-                        <span class="text-[9px] text-gray-600 font-bold uppercase select-none tracking-wider bg-white/5 border border-white/5 px-2 py-1 rounded-md">Protected</span>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
+                                {% if rid != 'general' %}
+                                <form method="POST" onsubmit="return confirm('Are you sure you want to completely purge this room node and all its chat documents permanently?');">
+                                    <input type="hidden" name="target_id" value="{{ rid }}">
+                                    <button type="submit" name="action" value="delete_room" class="w-9 h-9 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-xl flex items-center justify-center transition-all" title="Purge Room Node">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-[9px] text-gray-600 font-bold uppercase select-none tracking-wider bg-white/5 border border-white/5 px-2 py-1 rounded-md">Protected</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-xs text-gray-600 italic p-4 text-center">No active custom rooms detected.</p>
+                    {% endif %}
                 </div>
             </section>
 
@@ -182,4 +194,4 @@
     });
 </script>
 {% endblock %}
-    
+            
