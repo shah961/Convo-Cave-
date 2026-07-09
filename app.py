@@ -198,6 +198,52 @@ def dashboard():
                            username=current_user.username,
                            default_room=default_room_fallback)
 
+# ==========================================
+# ADMINISTRATIVE CONTROL ROUTING (ADMIN PANEL)
+# ==========================================
+
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required
+def admin_panel():
+    # Security Guard: Check if current node session has admin privileges
+    if not getattr(current_user, 'is_admin', False):
+        flash('Access Denied: Master Administration credentials required.')
+        return redirect(url_for('dashboard'))
+
+    users_ref = firebase_db.reference('users')
+    rooms_ref = firebase_db.reference('rooms')
+
+    # Handle Admin Actions (Post Requests like Ban, Unban, Delete Room)
+    if request.method == 'POST':
+        action = request.form.get('action')
+        target_id = request.form.get('target_id')
+
+        if action == 'ban_user' and target_id:
+            users_ref.child(target_id).update({"is_banned": True})
+            flash(f'User Node [{target_id[:8]}] successfully suspended.')
+        
+        elif action == 'unban_user' and target_id:
+            users_ref.child(target_id).update({"is_banned": False})
+            flash(f'User Node [{target_id[:8]}] operational clearance restored.')
+
+        elif action == 'delete_room' and target_id:
+            # Delete room configuration and its message cluster tree node
+            rooms_ref.child(target_id).delete()
+            firebase_db.reference(f'messages/{target_id}').delete()
+            flash(f'Communication Room [{target_id}] permanently purged.')
+
+        return redirect(url_for('admin_panel'))
+
+    # Fetch fresh real-time NoSQL snapshots for the admin layout view
+    all_users = users_ref.get() or {}
+    all_rooms = rooms_ref.get() or {}
+
+    return render_template('admin.html', 
+                           users=all_users, 
+                           rooms=all_rooms, 
+                           username=current_user.username)
+    
+
 # Serverless WSGI engine entry point fallback configuration
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
