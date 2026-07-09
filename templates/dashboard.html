@@ -1,578 +1,464 @@
 {% extends "base.html" %}
 {% block content %}
-<!-- Firebase v8 core SDK modules (Missing from base.html) -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<!-- Firebase v10 Modular SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getDatabase, ref, onValue, push, set, serverTimestamp, query, limitToLast, orderByChild, remove, update, onDisconnect, off } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-<!-- Lucide Icon System Engine -->
-<script src="https://unpkg.com/lucide@latest"></script>
-<!-- Standard imports for markdown compiling & syntax highlighting -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+  // Lucide Icon System
+  import { createIcons, Hash, PlusCircle, ShieldAlert, Sliders, LogOut, Terminal, Users, Info, Paperclip, Send, X, UploadCloud, RefreshCw, MessageSquareDashed, Check, CheckCheck, Edit3, Trash2, Reply, Smile, MoreVertical } from "https://unpkg.com/lucide@0.395.0/dist/esm/lucide.js";
+
+  const firebaseConfig = {{ firebase_config | tojson | safe }};
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  const flaskCustomToken = "{{ firebase_token }}";
+  const currentUserId = "{{ user_id }}";
+  const currentUsername = "{{ username }}";
+  const defaultRoomId = "{{ default_room.id if default_room else 'general' }}";
+
+  let currentRoomId = defaultRoomId;
+  let replyingTo = null;
+  let editingMessageId = null;
+
+  // Initialize UI Icons
+  const initIcons = () => createIcons({
+    icons: { Hash, PlusCircle, ShieldAlert, Sliders, LogOut, Terminal, Users, Info, Paperclip, Send, X, UploadCloud, RefreshCw, MessageSquareDashed, Check, CheckCheck, Edit3, Trash2, Reply, Smile, MoreVertical }
+  });
+  initIcons();
+
+  // Auth Handshake
+  if (flaskCustomToken) {
+    signInWithCustomToken(auth, flaskCustomToken).catch(err => {
+        console.error("Auth error:", err);
+        window.location.href = "/login";
+    });
+  }
+
+  // User Presence & Typing Status
+  const userStatusRef = ref(db, `status/${currentUserId}`);
+  set(userStatusRef, { state: 'online', last_changed: serverTimestamp() });
+  onDisconnect(userStatusRef).set({ state: 'offline', last_changed: serverTimestamp() });
+
+  window.setTyping = (isTyping) => {
+    if (!currentRoomId) return;
+    set(ref(db, `typing/${currentRoomId}/${currentUserId}`), isTyping ? { username: currentUsername, timestamp: serverTimestamp() } : null);
+  };
+
+  let activeTypingRef = null;
+  const watchTyping = (roomId) => {
+    if (activeTypingRef) off(activeTypingRef);
+    activeTypingRef = ref(db, `typing/${roomId}`);
+    onValue(activeTypingRef, (snapshot) => {
+        const typers = snapshot.val();
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (typers) {
+        const others = Object.values(typers).filter(t => t.username !== currentUsername);
+        if (others.length > 0) {
+            typingIndicator.innerText = `${others[0].username} is typing...`;
+            typingIndicator.classList.remove('hidden');
+            return;
+        }
+    }
+    typingIndicator.classList.add('hidden');
+  });
+
+  // Room Listener
+  const roomsRef = ref(db, 'rooms');
+  onValue(roomsRef, (snapshot) => {
+    const container = document.getElementById('rooms-list-container');
+    if (!container) return;
+    container.innerHTML = '';
+    const rooms = snapshot.val();
+    if (rooms) {
+        Object.entries(rooms).forEach(([id, room]) => {
+            const isActive = id === currentRoomId;
+            const btn = document.createElement('button');
+            btn.className = `w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-goLime text-goDark shadow-[0_0_15px_rgba(204,255,0,0.2)]' : 'text-gray-500 hover:bg-white/5 hover:text-white'}`;
+            btn.onclick = () => switchRoom(id, room.name, room.desc);
+            btn.innerHTML = `<span># ${room.name}</span>${isActive ? '<span class="w-1.5 h-1.5 rounded-full bg-goDark"></span>' : ''}`;
+            container.appendChild(btn);
+        });
+    }
+  });
+
+  window.switchRoom = (id, name, desc) => {
+    currentRoomId = id;
+    document.getElementById('active-room-title').innerText = name;
+    document.getElementById('active-room-desc').innerText = desc || 'Active Stream';
+    loadMessages(id);
+    watchTyping(id);
+  };
+
+  let activeMessagesListener = null;
+  const loadMessages = (roomId) => {
+    const log = document.getElementById('messages-log');
+    log.innerHTML = '<div class="text-center py-20 animate-pulse text-[10px] font-black uppercase tracking-widest text-gray-700">Syncing Protocol...</div>';
+    
+    if (activeMessagesListener) off(activeMessagesListener);
+    activeMessagesListener = query(ref(db, `messages/${roomId}`), orderByChild('timestamp'), limitToLast(50));
+
+    onValue(activeMessagesListener, (snapshot) => {
+        log.innerHTML = '';
+        const data = snapshot.val();
+        if (!data) {
+            log.innerHTML = '<div class="text-center py-20 text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">No signals detected</div>';
+            return;
+        }
+        Object.entries(data).forEach(([mid, msg]) => {
+            renderMessage(mid, msg);
+        });
+        const container = document.getElementById('messages-container');
+        container.scrollTop = container.scrollHeight;
+        initIcons();
+    });
+  };
+
+  const renderMessage = (mid, msg) => {
+    const log = document.getElementById('messages-log');
+    const isMe = msg.userId === currentUserId;
+    const div = document.createElement('div');
+    div.id = `msg-${mid}`;
+    div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1 mb-4 group`;
+
+    div.innerHTML = `
+        <div class="flex items-center gap-2 mb-1 px-2">
+            <span class="text-[9px] font-black uppercase tracking-widest ${isMe ? 'text-goLime' : 'text-gray-500'}">${msg.username}</span>
+            <span class="text-[8px] font-medium text-gray-700">${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+        </div>
+        <div class="relative max-w-[85%] md:max-w-[70%] flex items-center gap-2 ${isMe ? 'flex-row-reverse' : ''}">
+            <div class="px-5 py-3.5 rounded-[1.5rem] text-sm font-medium leading-relaxed shadow-sm ${isMe ? 'bg-white text-goDark rounded-tr-none' : 'bg-goCard text-gray-200 border border-white/5 rounded-tl-none'}">
+                ${msg.replyToContent ? `
+                    <div class="mb-3 p-3 bg-black/5 rounded-xl border-l-4 border-goLime text-[10px] font-bold opacity-60 flex flex-col gap-1">
+                        <span class="uppercase tracking-widest text-[8px]">${msg.replyToUser}</span>
+                        <span class="truncate">${msg.replyToContent}</span>
+                    </div>
+                ` : ''}
+                <p class="whitespace-pre-wrap">${msg.content}</p>
+                <div class="flex justify-end items-center gap-1 mt-1 opacity-40">
+                   ${msg.edited ? '<span class="text-[8px] uppercase tracking-tighter">Edited</span>' : ''}
+                   ${isMe ? '<i data-lucide="check-check" class="w-3 h-3"></i>' : ''}
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="setReply('${mid}', '${msg.username}', '${msg.content.replace(/'/g, "\\'")}')" class="p-2 bg-white/5 hover:bg-goLime/20 rounded-full text-gray-600 hover:text-goLime transition-all" title="Reply">
+                    <i data-lucide="reply" class="w-3.5 h-3.5"></i>
+                </button>
+                ${isMe ? `
+                <button onclick="editMessage('${mid}', '${msg.content.replace(/'/g, "\\'")}')" class="p-2 bg-white/5 hover:bg-goLime/20 rounded-full text-gray-600 hover:text-goLime transition-all" title="Edit">
+                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                </button>
+                <button onclick="deleteMessage('${mid}')" class="p-2 bg-white/5 hover:bg-red-500/20 rounded-full text-gray-600 hover:text-red-500 transition-all" title="Delete">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+                ` : ''}
+            </div>
+        </div>
+    `;
+    log.appendChild(div);
+  };
+
+  window.transmitMessage = (e) => {
+    if (e) e.preventDefault();
+    const input = document.getElementById('message-input');
+    const content = input.value.trim();
+    if (!content) return;
+
+    if (editingMessageId) {
+        update(ref(db, `messages/${currentRoomId}/${editingMessageId}`), {
+            content: content,
+            edited: true,
+            lastUpdated: serverTimestamp()
+        }).then(() => {
+            editingMessageId = null;
+            input.value = '';
+            document.getElementById('edit-indicator').classList.add('hidden');
+        });
+        return;
+    }
+
+    const payload = {
+        userId: currentUserId,
+        username: currentUsername,
+        content: content,
+        timestamp: serverTimestamp(),
+    };
+
+    if (replyingTo) {
+        payload.replyToId = replyingTo.id;
+        payload.replyToUser = replyingTo.user;
+        payload.replyToContent = replyingTo.content;
+    }
+    
+    push(ref(db, `messages/${currentRoomId}`), payload).then(() => {
+        input.value = '';
+        cancelReply();
+        setTyping(false);
+    });
+  };
+
+  window.deleteMessage = (mid) => {
+    if (confirm("Permanently terminate this message signal?")) {
+        remove(ref(db, `messages/${currentRoomId}/${mid}`));
+    }
+  };
+
+  window.setReply = (mid, user, content) => {
+    replyingTo = { id: mid, user: user, content: content };
+    const preview = document.getElementById('reply-preview');
+    preview.classList.remove('hidden');
+    preview.querySelector('.reply-user').innerText = user;
+    preview.querySelector('.reply-text').innerText = content;
+    document.getElementById('message-input').focus();
+  };
+
+  window.cancelReply = () => {
+    replyingTo = null;
+    document.getElementById('reply-preview').classList.add('hidden');
+  };
+
+  window.editMessage = (mid, content) => {
+    editingMessageId = mid;
+    const input = document.getElementById('message-input');
+    input.value = content;
+    document.getElementById('edit-indicator').classList.remove('hidden');
+    input.focus();
+  };
+
+  window.cancelEdit = () => {
+    editingMessageId = null;
+    document.getElementById('message-input').value = '';
+    document.getElementById('edit-indicator').classList.add('hidden');
+  };
+
+  // UI Event Handlers
+  const messageInput = document.getElementById('message-input');
+  messageInput.oninput = () => {
+    setTyping(messageInput.value.length > 0);
+  };
+
+  window.triggerRoomCreation = () => {
+    const slug = document.getElementById('new-room-id').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+    const name = document.getElementById('new-room-name').value.trim();
+    if (!slug || !name) return;
+    set(ref(db, `rooms/${slug}`), { id: slug, name: name, desc: 'Protocol Node active' }).then(() => {
+        closeModal('create-room-modal');
+        document.getElementById('new-room-id').value = '';
+        document.getElementById('new-room-name').value = '';
+    });
+  };
+
+  // Helper functions for auth onDisconnect (modular requires special handling)
+  // Actually onDisconnect is available in Modular SDK via getDatabase() functions but needs different import
+  // But for now we skip complex presence for stability
+
+  window.openModal = (id) => document.getElementById(id).classList.remove('hidden');
+  window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+  window.catchInputReturn = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        transmitMessage();
+    }
+  };
+
+  // Initial Message Load
+  loadMessages(currentRoomId);
+
+</script>
 
 <style>
-    
     :root {
-        --accent-color: #9d4edd;
         --chat-font-size: 14px;
-        --chat-wallpaper: radial-gradient(circle at 50% 50%, #150c22 0%, #0d0714 100%);
     }
-    .custom-accent-text { color: var(--accent-color) !important; }
-    .custom-accent-bg { background-color: var(--accent-color) !important; }
-    .custom-accent-border { border-color: var(--accent-color) !important; }
-    #messages-container { font-size: var(--chat-font-size); background: var(--chat-wallpaper); }
-    
-    /* Make Lucide SVG icons scale cleanly inside buttons */
-    .lucide {
-        width: 18px;
-        height: 18px;
-    }
-    .lucide-lg {
-        width: 24px;
-        height: 24px;
-    }
+    #messages-container { font-size: var(--chat-font-size); scrollbar-width: thin; scrollbar-color: #2a2a2a transparent; }
+    #messages-container::-webkit-scrollbar { width: 4px; }
+    #messages-container::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 10px; }
+    .lucide { width: 18px; height: 18px; }
 </style>
 
-<div class="flex h-screen bg-caveDark text-gray-200 overflow-hidden font-sans select-none relative">
-
-        <aside class="w-80 bg-caveMidnight border-r border-white/5 flex flex-col justify-between p-4 z-20">
-        <div class="space-y-6">
-            <div class="flex items-center justify-between border-b border-white/5 pb-4">
-                <div class="flex items-center gap-3">
-                    <img src="/static/logo.png" alt="Convo Cave" class="h-8 w-auto logo-glow">
-                    <div>
-                        <span class="text-sm font-black tracking-widest text-caveNeon">CONVO CAVE</span>
-                        <p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Serverless Active</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span class="text-[9px] font-mono font-bold text-emerald-400 tracking-wider">ONLINE</span>
-                </div>
+<div class="flex h-screen bg-goDark text-gray-200 overflow-hidden relative">
+    <!-- Sidebar -->
+    <aside class="w-80 bg-goMidnight border-r border-white/5 flex flex-col p-8 z-20">
+        <div class="space-y-12 flex flex-col h-full">
+            <div class="flex items-center gap-4">
+                <img src="/static/logo.png" alt="Convo Go" class="h-10 w-auto logo-glow">
+                <span class="text-2xl font-black tracking-tighter text-white uppercase">Go <span class="text-goLime">Protocol</span></span>
             </div>
 
-            <div class="bg-caveCard border border-white/5 p-4 rounded-xl space-y-4 shadow-lg relative overflow-hidden group">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-xl bg-cavePurple/20 text-cavePurple flex items-center justify-center border border-cavePurple/30 relative">
-                        <i data-lucide="terminal" class="w-6 h-6"></i>
-                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border border-caveCard rounded-full"></span>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-black tracking-wide text-gray-200 uppercase">{{ username }}</h3>
-                        <p class="text-[10px] font-mono text-cavePurple">UID: <span class="text-gray-400 font-bold">{{ user_id[:8] }}...</span></p>
-                    </div>
-                </div>
-
-                <div class="space-y-1.5 text-xs font-mono border-t border-white/5 pt-3">
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Location:</span>
-                        <span class="font-bold text-caveNeon">{{ current_user.profile.country if current_user.profile else 'Pakistan' }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Privilege:</span>
-                        <span class="font-bold {{ 'text-yellow-400' if current_user.is_admin else 'text-gray-400' }}">
-                            {{ 'Master Admin' if current_user.is_admin else 'Standard Node' }}
-                        </span>
-                    </div>
-                </div>
-                            </div>
-
-                        <div class="space-y-2 flex-grow overflow-y-auto pr-1">
-                <div class="flex items-center justify-between text-xs font-mono uppercase text-gray-500 tracking-wider px-2">
-                    <span>Communication Rooms</span>
-                    <button onclick="openModal('create-room-modal')" class="hover:text-caveNeon transition-colors">
-                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <!-- Profile Summary -->
+            <div class="bg-goCard border border-white/5 p-6 rounded-[2.5rem] space-y-4 relative group overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onclick="openModal('profile-modal')" class="p-2 bg-white/5 rounded-xl text-gray-500 hover:text-goLime transition-all">
+                        <i data-lucide="sliders" class="w-4 h-4"></i>
                     </button>
                 </div>
-                <div id="rooms-list-container" class="space-y-1">
-                    <div class="text-xs text-gray-600 italic px-2">Loading active matrix nodes...</div>
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-goLime text-goDark flex items-center justify-center font-black text-xl shadow-[0_0_20px_rgba(204,255,0,0.1)]">
+                        {{ username[:1].upper() }}
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black uppercase tracking-tight text-white">{{ username }}</h3>
+                        <p class="text-[9px] font-black uppercase tracking-widest text-goLime">Active Session</p>
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-white/5 space-y-2">
+                    <div class="flex justify-between text-[9px] font-black uppercase tracking-widest">
+                        <span class="text-gray-600">Location</span>
+                        <span class="text-white">{{ current_user.profile.country }}</span>
+                    </div>
+                    <div class="flex justify-between text-[9px] font-black uppercase tracking-widest">
+                        <span class="text-gray-600">Access</span>
+                        <span class="{{ 'text-goLime' if current_user.is_admin else 'text-white' }}">{{ 'Master Admin' if current_user.is_admin else 'Standard' }}</span>
+                    </div>
                 </div>
             </div>
+
+            <!-- Room List -->
+            <div class="flex-grow space-y-6 overflow-y-auto">
+                <div class="flex items-center justify-between px-2">
+                    <span class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">Nodes</span>
+                    <button onclick="openModal('create-room-modal')" class="text-goLime hover:scale-110 transition-transform">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div id="rooms-list-container" class="space-y-3"></div>
+            </div>
+
+            <!-- Sidebar Actions -->
+            <div class="space-y-3">
+                {% if current_user.is_admin %}
+                <a href="/admin" class="flex items-center gap-3 w-full bg-goLime/5 border border-goLime/10 px-6 py-4 rounded-2xl text-goLime font-black text-[10px] uppercase tracking-widest hover:bg-goLime hover:text-goDark transition-all">
+                    <i data-lucide="shield-alert"></i>
+                    <span>Admin System</span>
+                </a>
+                {% endif %}
+                <a href="/logout" class="flex items-center gap-3 w-full bg-white/5 border border-white/5 px-6 py-4 rounded-2xl text-white font-black text-[10px] uppercase tracking-widest hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 transition-all">
+                    <i data-lucide="log-out"></i>
+                    <span>End Session</span>
+                </a>
+            </div>
         </div>
+    </aside>
 
-        <div class="space-y-3 pt-4 border-t border-white/5 bg-caveMidnight">
-            {% if current_user.is_admin %}
-            <a href="/admin" class="flex items-center gap-3 w-full bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 px-4 py-3 rounded-xl text-yellow-400 font-bold text-xs font-mono transition-all group">
-                <i data-lucide="shield-alert" class="w-4 h-4 text-yellow-400 transition-transform group-hover:scale-110"></i>
-                <span class="tracking-wide">ADMIN CONSOLE</span>
-            </a>
-            {% endif %}
-
-            <button onclick="openModal('settings-modal')" class="flex items-center gap-3 w-full bg-white/5 hover:bg-white/10 border border-white/5 px-4 py-3 rounded-xl text-gray-300 font-bold text-xs font-mono transition-all group">
-                <i data-lucide="sliders" class="w-4 h-4 text-cavePurple transition-transform group-hover:rotate-45"></i>
-                <span class="tracking-wide">ENGINE SETTINGS</span>
-            </button>
-
-            <a href="/logout" class="flex items-center gap-3 w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 px-4 py-3 rounded-xl text-red-400 font-bold text-xs font-mono transition-all group">
-                <i data-lucide="log-out" class="w-4 h-4 text-red-400 transition-transform group-hover:translate-x-0.5"></i>
-                <span class="tracking-wide">TERMINATE SESSION</span>
-            </a>
-        </div>
-                        </aside>
-
-    
-            <main class="flex-grow flex flex-col h-full bg-caveDark relative z-10">
-        <header class="h-16 bg-caveMidnight/60 backdrop-blur border-b border-white/5 flex items-center justify-between px-6 z-10 shadow-md">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg bg-caveNeon/10 border border-caveNeon/20 text-caveNeon flex items-center justify-center">
-                    <i data-lucide="hash" class="w-5 h-5"></i>
+    <!-- Main Chat -->
+    <main class="flex-grow flex flex-col h-full bg-goDark">
+        <header class="h-24 bg-goMidnight/50 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-12 z-10">
+            <div class="flex items-center gap-5">
+                <div class="w-12 h-12 rounded-2xl bg-goLime/10 text-goLime flex items-center justify-center border border-goLime/20">
+                    <i data-lucide="hash" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h2 id="active-room-title" class="text-sm font-black text-gray-100 uppercase tracking-wide">Select Communication Room</h2>
-                    <p id="active-room-desc" class="text-[11px] text-gray-500 font-mono">Real-time authentication pipeline standby</p>
+                    <h2 id="active-room-title" class="text-lg font-black text-white uppercase tracking-tighter">Protocol Node</h2>
+                    <div class="flex items-center gap-2">
+                        <span id="active-room-desc" class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Awaiting Signal</span>
+                        <span id="typing-indicator" class="hidden text-[10px] text-goLime font-black uppercase tracking-widest animate-pulse"></span>
+                    </div>
                 </div>
             </div>
-
             <div class="flex items-center gap-4">
-                <div id="room-members-badge" class="hidden items-center gap-1.5 bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg text-[10px] font-mono text-gray-400">
-                    <i data-lucide="users" class="w-3.5 h-3.5 text-cavePurple"></i>
-                    <span>MEMBERS: <strong id="room-members-count" class="text-gray-200">0</strong></span>
-                </div>
-                <button onclick="openModal('room-details-modal')" class="p-2 hover:bg-white/5 border border-transparent hover:border-white/5 rounded-lg text-gray-400 hover:text-caveNeon transition-all">
-                    <i data-lucide="info" class="w-5 h-5"></i>
+                <button class="p-3 bg-white/5 rounded-xl text-gray-500 hover:text-white transition-all">
+                    <i data-lucide="users"></i>
+                </button>
+                <button onclick="openModal('room-details-modal')" class="p-3 bg-white/5 rounded-xl text-gray-500 hover:text-white transition-all">
+                    <i data-lucide="info"></i>
                 </button>
             </div>
         </header>
 
-        <div id="messages-container" class="flex-grow overflow-y-auto p-6 space-y-4 relative scroll-smooth flex flex-col justify-between">
-            <div id="messages-log" class="space-y-4">
-                <div class="flex flex-col items-center justify-center h-64 text-center space-y-3 font-mono">
-                    <div class="w-10 h-10 rounded-full border border-cavePurple/30 bg-cavePurple/10 flex items-center justify-center text-cavePurple animate-spin">
-                        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-                    </div>
-                    <p class="text-xs text-gray-500 max-w-xs">Initializing secure browser custom token synchronizations...</p>
-                </div>
-            </div>
+        <div id="messages-container" class="flex-grow overflow-y-auto p-12 space-y-8">
+            <div id="messages-log" class="max-w-5xl mx-auto w-full"></div>
         </div>
-        <footer class="p-4 bg-caveMidnight/40 border-t border-white/5 backdrop-blur z-10 relative">
-            <form id="message-form" onsubmit="transmitMessage(event)" class="max-w-6xl mx-auto flex items-end gap-3 bg-caveCard border border-white/5 p-2 rounded-2xl shadow-xl focus-within:border-cavePurple/40 transition-all relative">
-                <div class="flex items-center gap-1">
-                    <button type="button" onclick="document.getElementById('hidden-file-input').click()" class="p-2.5 hover:bg-white/5 rounded-xl text-gray-400 hover:text-caveNeon transition-all" title="Attach Media Artifact">
-                        <i data-lucide="paperclip" class="w-5 h-5"></i>
+
+        <footer class="p-10 bg-goDark relative">
+            <div class="max-w-5xl mx-auto w-full relative">
+
+                <!-- Reply Preview -->
+                <div id="reply-preview" class="hidden absolute bottom-full left-0 right-0 mb-2 px-6 py-4 bg-goCard border border-goLime/20 rounded-3xl flex flex-col gap-1 animate-in slide-in-from-bottom-2 duration-200">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-goLime">Replying to <span class="reply-user text-white"></span></span>
+                        <button onclick="cancelReply()" class="text-gray-600 hover:text-white"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                    <p class="reply-text text-xs text-gray-500 truncate italic"></p>
+                </div>
+
+                <!-- Edit Indicator -->
+                <div id="edit-indicator" class="hidden absolute bottom-full left-0 mb-2 px-4 py-2 bg-goLime text-goDark text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-2 shadow-lg">
+                    <i data-lucide="edit-3" class="w-3 h-3"></i>
+                    <span>Editing Mode</span>
+                    <button onclick="cancelEdit()" class="ml-2 hover:opacity-50"><i data-lucide="x" class="w-3 h-3"></i></button>
+                </div>
+
+                <form id="message-form" onsubmit="transmitMessage(event)" class="flex items-center gap-5 bg-goCard border border-white/5 p-3 rounded-[2.5rem] shadow-2xl focus-within:border-goLime/30 transition-all">
+                    <button type="button" class="p-4 text-gray-600 hover:text-goLime transition-all">
+                        <i data-lucide="smile"></i>
                     </button>
-                    <input type="file" id="hidden-file-input" onchange="handleFileUpload()" class="hidden" multiple>
-                </div>
-
-                <div class="flex-grow relative">
-                    <textarea id="message-input" onkeydown="catchInputReturn(event)" rows="1" placeholder="Type data packet instructions here (Markdown & code syntax supported)..." class="w-full bg-transparent border-0 outline-none resize-none py-2 text-sm text-gray-200 placeholder-gray-500 max-h-36 overflow-y-auto focus:ring-0"></textarea>
-                </div>
-
-                <button type="submit" class="p-2.5 bg-cavePurple hover:bg-cavePurple/80 text-white rounded-xl shadow-lg shadow-cavePurple/20 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center">
-                    <i data-lucide="send" class="w-5 h-5"></i>
-                </button>
-            </form>
-        </footer >
+                    <button type="button" class="p-4 text-gray-600 hover:text-goLime transition-all">
+                        <i data-lucide="paperclip"></i>
+                    </button>
+                    <textarea id="message-input" onkeydown="catchInputReturn(event)" rows="1" placeholder="Type a message into the protocol..." class="flex-grow bg-transparent border-0 outline-none resize-none py-3 text-sm text-white placeholder-gray-700 font-medium"></textarea>
+                    <button type="submit" class="w-14 h-14 bg-goLime text-goDark rounded-[1.5rem] flex items-center justify-center shadow-[0_0_30px_rgba(204,255,0,0.2)] hover:scale-105 active:scale-95 transition-all">
+                        <i data-lucide="send" class="w-6 h-6"></i>
+                    </button>
+                </form>
+            </div>
+        </footer>
     </main>
 
-    <div id="drop-zone-overlay" class="hidden absolute inset-0 bg-caveDark/90 backdrop-blur-md border-2 border-dashed border-caveNeon z-50 flex-col items-center justify-center space-y-4 font-mono pointer-events-none">
-        <div class="w-16 h-16 rounded-full bg-caveNeon/10 text-caveNeon border border-caveNeon/20 flex items-center justify-center animate-bounce">
-            <i data-lucide="upload-cloud" class="w-8 h-8"></i>
-        </div>
-        <h3 class="text-lg font-black text-caveNeon uppercase tracking-widest">Inbound Media Packet Detected</h3>
-        <p class="text-xs text-gray-500">Release payload mouse vectors anywhere to upload artifact streams</p>
-    </div>
-    <div id="create-room-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-caveCard border border-white/5 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
+    <!-- Create Room Modal -->
+    <div id="create-room-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center p-8">
+        <div class="bg-goCard border border-white/5 w-full max-w-md rounded-[3rem] p-12 space-y-10 shadow-[0_0_100px_rgba(0,0,0,0.5)]">
             <div class="flex justify-between items-center">
-                <h3 class="text-sm font-black tracking-wider text-caveNeon uppercase font-mono">Create Matrix Node</h3>
-                <button onclick="closeModal('create-room-modal')" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <h3 class="text-sm font-black tracking-[0.3em] text-goLime uppercase">Initialize Node</h3>
+                <button onclick="closeModal('create-room-modal')" class="text-gray-700 hover:text-white transition-colors"><i data-lucide="x"></i></button>
             </div>
-            <div class="space-y-3 font-mono text-xs">
+            <div class="space-y-6">
                 <div>
-                    <label class="text-gray-400 block mb-1">Room Unique Identifier (Slug)</label>
-                    <input type="text" id="new-room-id" placeholder="e.g., phonk-lounge" class="w-full bg-caveDark border border-white/10 rounded-xl px-3 py-2.5 text-gray-200 outline-none focus:border-cavePurple/50">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-600 mb-2 ml-1">Node Identification</label>
+                    <input type="text" id="new-room-id" placeholder="SLUG (e.g. dev-lounge)" class="w-full bg-goDark border border-white/5 rounded-2xl px-6 py-5 text-xs font-bold text-white outline-none focus:border-goLime/50 uppercase placeholder:text-gray-800">
                 </div>
                 <div>
-                    <label class="text-gray-400 block mb-1">Display Title Name</label>
-                    <input type="text" id="new-room-name" placeholder="e.g., # Phonk Lounge" class="w-full bg-caveDark border border-white/10 rounded-xl px-3 py-2.5 text-gray-200 outline-none focus:border-cavePurple/50">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-600 mb-2 ml-1">Display Title</label>
+                    <input type="text" id="new-room-name" placeholder="HUMAN READABLE NAME" class="w-full bg-goDark border border-white/5 rounded-2xl px-6 py-5 text-xs font-bold text-white outline-none focus:border-goLime/50 uppercase placeholder:text-gray-800">
                 </div>
-                <div>
-                    <label class="text-gray-400 block mb-1">Description Vector</label>
-                    <input type="text" id="new-room-desc" placeholder="Operational stream details..." class="w-full bg-caveDark border border-white/10 rounded-xl px-3 py-2.5 text-gray-200 outline-none focus:border-cavePurple/50">
-                </div>
-                <button onclick="triggerRoomCreation()" class="w-full py-3 bg-caveNeon text-caveDark font-black rounded-xl uppercase tracking-wider hover:opacity-90 transition-all mt-2">Initialize Node</button>
+                <button onclick="triggerRoomCreation()" class="w-full py-6 bg-white text-goDark font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-goLime transition-all shadow-xl">Activate Node</button>
             </div>
         </div>
     </div>
 
-    <div id="settings-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-caveCard border border-white/5 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center p-8">
+        <div class="bg-goCard border border-white/5 w-full max-w-lg rounded-[3rem] p-12 space-y-10">
             <div class="flex justify-between items-center">
-                <h3 class="text-sm font-black tracking-wider text-cavePurple uppercase font-mono">Engine Preferences</h3>
-                <button onclick="closeModal('settings-modal')" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <h3 class="text-sm font-black tracking-[0.3em] text-goLime uppercase">Protocol Identity</h3>
+                <button onclick="closeModal('profile-modal')" class="text-gray-700 hover:text-white transition-colors"><i data-lucide="x"></i></button>
             </div>
-            <div class="space-y-4 font-mono text-xs">
-                <div>
-                    <label class="text-gray-400 block mb-1.5">Matrix Color Vector Accent</label>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button onclick="applyCustomTheme('#00ffcc')" class="bg-[#00ffcc] h-8 rounded-lg text-black font-bold text-[10px]">Neon</button>
-                        <button onclick="applyCustomTheme('#9d4edd')" class="bg-[#9d4edd] h-8 rounded-lg text-white font-bold text-[10px]">Phonk</button>
-                        <button onclick="applyCustomTheme('#3a86ff')" class="bg-[#3a86ff] h-8 rounded-lg text-white font-bold text-[10px]">Cyber</button>
-                        <button onclick="applyCustomTheme('#ff006e')" class="bg-[#ff006e] h-8 rounded-lg text-white font-bold text-[10px]">Rage</button>
+            <div class="space-y-8">
+                <div class="flex flex-col items-center gap-4">
+                    <div class="w-24 h-24 rounded-[2rem] bg-goLime text-goDark flex items-center justify-center font-black text-4xl">
+                        {{ username[:1].upper() }}
+                    </div>
+                    <h4 class="text-2xl font-black uppercase tracking-tighter">{{ username }}</h4>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-goDark/50 p-6 rounded-3xl border border-white/5">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-600 block mb-1">Email</span>
+                        <span class="text-xs font-bold text-gray-300">{{ current_user.email }}</span>
+                    </div>
+                    <div class="bg-goDark/50 p-6 rounded-3xl border border-white/5">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-600 block mb-1">Phone</span>
+                        <span class="text-xs font-bold text-gray-300">{{ current_user.phone or 'Not Set' }}</span>
                     </div>
                 </div>
-                <div>
-                    <label class="text-gray-400 block mb-1.5">Text Data Scale</label>
-                    <select onchange="adjustFontScale(this.value)" class="w-full bg-caveDark border border-white/10 rounded-xl px-3 py-2 text-gray-200 outline-none">
-                        <option value="13px">Compact Size</option>
-                        <option value="14px" selected>Standard Matrix</option>
-                        <option value="16px">Enhanced Scale</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-gray-400 block mb-1.5">Wallpaper Environment Canvas</label>
-                    <select onchange="applyWallpaper(this.value)" class="w-full bg-caveDark border border-white/10 rounded-xl px-3 py-2 text-gray-200 outline-none">
-                        <option value="matrix" selected>Radial Phonk (Default)</option>
-                        <option value="solid">Solid Absolute Void</option>
-                        <option value="abstract">Linear Grid Gradient</option>
-                    </select>
+                <div class="bg-goDark/50 p-6 rounded-3xl border border-white/5">
+                    <span class="text-[9px] font-black uppercase tracking-widest text-gray-600 block mb-1">Bio Protocol</span>
+                    <p class="text-xs font-bold text-gray-300">{{ current_user.profile.bio }}</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="room-details-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-caveCard border border-white/5 w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b border-white/5 pb-3">
-                <h3 class="text-sm font-black tracking-wider text-gray-200 uppercase font-mono">Node Architecture</h3>
-                <button onclick="closeModal('room-details-modal')" class="text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <div class="font-mono text-xs space-y-3">
-                <div class="bg-caveDark/60 p-3 rounded-xl border border-white/5 space-y-2">
-                    <p class="text-[10px] text-gray-500 uppercase">Current Target Segment</p>
-                    <p id="modal-room-id-display" class="font-bold text-caveNeon break-all"># general</p>
-                </div>
-                <div class="bg-caveDark/60 p-3 rounded-xl border border-white/5 space-y-1">
-                    <p class="text-[10px] text-gray-500 uppercase">Operational Rules</p>
-                    <p class="text-gray-400 leading-relaxed text-[11px]">All real-time telemetry packets are end-to-end synced via Firebase NoSQL servers stateless loop.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-        <!-- ========================================== -->
-    <!-- 5. REAL-TIME ENGINE CORE JAVASCRIPT LOGIC -->
-    <!-- ========================================== -->
-    <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            // 1. Initialize Lucide Visual System Components
-            lucide.createIcons();
-
-            // 2. Safely Fetch Configurations & Environment Variables from Flask
-            const firebaseConfig = {{ firebase_config | tojson | safe }};
-            const flaskCustomToken = "{{ firebase_token }}";
-            const currentUserId = "{{ user_id }}";
-            const currentUsername = "{{ username }}";
-
-            // 3. Global State Controllers & Memory Trackers (Safe Auto-Fallback to general room)
-            const defaultRoomIdFromBackend = "{{ default_room.id if default_room else 'general' }}";
-            let currentRoomId = defaultRoomIdFromBackend;
-            let activeFirebaseQueryRef = null;
-
-            // 4. Initialize Cloud Firebase Infrastructure 
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-            }
-            const database = firebase.database();
-
-            // 5. Secure Authentication Handshake Pipeline Loop
-            if (flaskCustomToken && flaskCustomToken !== "") {
-                firebase.auth().signInWithCustomToken(flaskCustomToken)
-                    .then((userCredential) => {
-                        console.log("Secure real-time pipeline established. Authenticated UID:", userCredential.user.uid);
-                        
-                        // Bootstrap active listeners safely
-                        setupDragAndDrop();
-                        initializeRoomsObserver();
-                    })
-                    .catch((error) => {
-                        console.error("Pipeline authentication handshake failure:", error);
-                        // Prevent fake browser popups and capture true custom token expirations cleanly
-                        if (error.code === "auth/invalid-custom-token") {
-                            alert("Real-time engine connection lost. Please re-login to re-mint your secure token.");
-                            window.location.href = "/login";
-                        }
-                    });
-            } else {
-                console.warn("No active token pass discovered from Flask backend context.");
-            }
-            // ==========================================
-            // 6. DYNAMIC ROOM OBSERVER & SYNC ENGINE
-            // ==========================================
-            function initializeRoomsObserver() {
-                const roomsRef = database.ref('rooms');
-                roomsRef.on('value', (snapshot) => {
-                    const container = document.getElementById('rooms-list-container');
-                    if (!container) return;
-                    container.innerHTML = '';
-
-                    const roomsData = snapshot.val();
-                    if (!roomsData) {
-                        container.innerHTML = '<div class="text-xs text-gray-600 italic px-2">No active rooms found.</div>';
-                        return;
-                    }
-
-                    // Loop through available firebase JSON nodes dynamically
-                    Object.keys(roomsData).forEach((key) => {
-                        const room = roomsData[key];
-                        const roomId = room.id || key;
-                        const roomName = room.name || `# ${roomId}`;
-                        const isActive = (roomId === currentRoomId);
-
-                        const roomBtn = document.createElement('button');
-                        roomBtn.className = `w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-mono tracking-wide transition-all uppercase ${
-                            isActive 
-                            ? 'bg-cavePurple/20 text-caveNeon border border-cavePurple/30 shadow-md font-bold' 
-                            : 'text-gray-400 hover:bg-white/5 hover:text-gray-200 border border-transparent'
-                        }`;
-                        
-                        // Action link on click event vector mapping
-                        roomBtn.onclick = () => switchActiveRoom(roomId, roomName, room.desc || '');
-
-                        roomBtn.innerHTML = `
-                            <div class="flex items-center gap-2 truncate">
-                                <i data-lucide="hash" class="w-3.5 h-3.5 opacity-60"></i>
-                                <span class="truncate">${roomName}</span>
-                            </div>
-                            ${isActive ? '<span class="w-1.5 h-1.5 rounded-full bg-caveNeon animate-pulse"></span>' : ''}
-                        `;
-                        container.appendChild(roomBtn);
-                    });
-
-                    // Auto load messaging logic on first paint sequence execution
-                    if (currentRoomId) {
-                        const currentActiveRoom = roomsData[currentRoomId] || { name: `# ${currentRoomId}`, desc: 'Active communication stream' };
-                        switchActiveRoom(currentRoomId, currentActiveRoom.name, currentActiveRoom.desc);
-                    }
-                    lucide.createIcons();
-                });
-            }
-
-            // Room Switch Router Component Tracker
-            window.switchActiveRoom = function(roomId, roomName, roomDesc) {
-                currentRoomId = roomId;
-                
-                // Update UI Node Fields Instantly
-                document.getElementById('active-room-title').innerText = roomName;
-                document.getElementById('active-room-desc').innerText = roomDesc || 'No operational data provided.';
-                document.getElementById('modal-room-id-display').innerText = `# ${roomId}`;
-
-                // Re-render sidebars highlight parameters status loop
-                const container = document.getElementById('rooms-list-container');
-                if (container) {
-                    Array.from(container.children).forEach((btn) => {
-                        const isTarget = btn.innerText.toLowerCase().includes(roomName.replace('#','').trim().toLowerCase());
-                        if (isTarget) {
-                            btn.className = btn.className.replace('text-gray-400', 'bg-cavePurple/20 text-caveNeon border-cavePurple/30');
-                        }
-                    });
-                }
-
-                // Call core message loader stream
-                loadFirebaseMessages(roomId);
-            };
-                    // ==========================================
-            // 7. REAL-TIME MESSAGING ENGINE (READ/WRITE)
-            // ==========================================
-            function loadFirebaseMessages(roomId) {
-                // Detach any previous database listeners to prevent memory leaks or duplication
-                if (activeFirebaseQueryRef) {
-                    activeFirebaseQueryRef.off();
-                }
-
-                const logContainer = document.getElementById('messages-log');
-                if (!logContainer) return;
-
-                // Point reference to the targeted communication cave node tree path
-                activeFirebaseQueryRef = database.ref(`messages/${roomId}`).orderByChild('timestamp').limitToLast(100);
-                
-                activeFirebaseQueryRef.on('value', (snapshot) => {
-                    logContainer.innerHTML = '';
-                    const data = snapshot.val();
-
-                    if (!data) {
-                        logContainer.innerHTML = `
-                            <div class="flex flex-col items-center justify-center h-48 text-center text-gray-600 font-mono text-xs">
-                                <i data-lucide="message-square-dashed" class="w-8 h-8 mb-2 opacity-40"></i>
-                                <p>This cave node is completely silent. Send a transmission packet to begin.</p>
-                            </div>
-                        `;
-                        lucide.createIcons();
-                        return;
-                    }
-
-                    // Loop through documents and render them securely
-                    Object.keys(data).forEach((key) => {
-                        const msg = data[key];
-                        const isMe = (msg.userId === currentUserId);
-                        
-                        const msgBlock = document.createElement('div');
-                        msgBlock.className = `flex gap-3 max-w-3xl ${isMe ? 'ml-auto flex-row-reverse' : 'mr-auto'}`;
-
-                        // Markdown parsing compiling engine safety setup
-                        const cleanContent = marked.parse(msg.content || '');
-
-                        msgBlock.innerHTML = `
-                            <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-mono font-black shrink-0 ${isMe ? 'text-caveNeon border-caveNeon/30' : 'text-cavePurple border-cavePurple/30'}">
-                                ${msg.username ? msg.username.substring(0,2).toUpperCase() : '??'}
-                            </div>
-                            <div class="space-y-1 ${isMe ? 'text-right' : 'text-left'}">
-                                <div class="flex items-center gap-2 text-[10px] font-mono text-gray-500 ${isMe ? 'flex-row-reverse' : ''}">
-                                    <span class="font-bold text-gray-400 uppercase">${msg.username || 'Anonymous'}</span>
-                                    <span>•</span>
-                                    <span>${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                </div>
-                                <div class="bg-caveCard border border-white/5 px-4 py-2.5 rounded-2xl text-sm text-gray-300 leading-relaxed shadow-md break-words text-left matches-markdown-styles">
-                                    ${cleanContent}
-                                </div>
-                            </div>
-                        `;
-                        logContainer.appendChild(msgBlock);
-                    });
-
-                    // Instantly scroll window down to catch the latest inbound packets
-                    const mainScroll = document.getElementById('messages-container');
-                    if (mainScroll) {
-                        mainScroll.scrollTop = mainScroll.scrollHeight;
-                    }
-                    lucide.createIcons();
-                });
-            }
-
-            // Transmit outbound text streams to the Firebase JSON cluster
-            window.transmitMessage = function(event) {
-                if (event) event.preventDefault();
-                
-                const inputEl = document.getElementById('message-input');
-                if (!inputEl) return;
-
-                const contentText = inputEl.value.trim();
-                if (!contentText || !currentRoomId) return;
-
-                const payload = {
-                    userId: currentUserId,
-                    username: currentUsername,
-                    content: contentText,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                };
-
-                // Push payload straight up into the active node stream path
-                database.ref(`messages/${currentRoomId}`).push().set(payload)
-                    .then(() => {
-                        inputEl.value = '';
-                        inputEl.rows = 1;
-                    })
-                    .catch((err) => console.error("Transmission failed:", err));
-            };
-
-            // Custom handler to upload media components (Fallback mock placeholder)
-            window.handleFileUpload = function() {
-                const fileInput = document.getElementById('hidden-file-input');
-                if (fileInput && fileInput.files.length > 0) {
-                    alert("Media storage engine active. File uploaded successfully to memory stack pipeline!");
-                    fileInput.value = '';
-                }
-            };
-            // ==========================================
-            // 8. INTERACTIVE UTILITIES & UI TRANSFORMS
-            // ==========================================
-            
-            // Intercept enter clicks inside chat textareas to submit packets
-            window.catchInputReturn = function(event) {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();
-                    transmitMessage();
-                }
-            };
-
-            // Programmatically initialize new message nodes into /rooms database
-            window.triggerRoomCreation = function() {
-                const slugId = document.getElementById('new-room-id').value.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '');
-                const titleName = document.getElementById('new-room-name').value.trim();
-                const nodeDesc = document.getElementById('new-room-desc').value.trim();
-
-                if (!slugId || !titleName) {
-                    alert("Slug ID and Display Name criteria metrics are mandatory.");
-                    return;
-                }
-
-                const newRoomPayload = {
-                    id: slugId,
-                    name: titleName,
-                    desc: nodeDesc || "No manual summary assigned to this custom cave node."
-                };
-
-                database.ref(`rooms/${slugId}`).set(newRoomPayload)
-                    .then(() => {
-                        closeModal('create-room-modal');
-                        document.getElementById('new-room-id').value = '';
-                        document.getElementById('new-room-name').value = '';
-                        document.getElementById('new-room-desc').value = '';
-                    })
-                    .catch((err) => alert("Room matrix configuration failure: " + err.message));
-            };
-
-            // Modal controller mechanics
-            window.openModal = function(id) {
-                const el = document.getElementById(id);
-                if (el) el.classList.remove('hidden');
-            };
-
-            window.closeModal = function(id) {
-                const el = document.getElementById(id);
-                if (el) el.classList.add('hidden');
-            };
-
-            // Theme customization overrides 
-            window.applyCustomTheme = function(colorHex) {
-                document.documentElement.style.setProperty('--accent-color', colorHex);
-                alert("Visual core theme sync active. Accent mapped to: " + colorHex);
-            };
-
-            window.adjustFontScale = function(fontSize) {
-                document.documentElement.style.setProperty('--chat-font-size', fontSize);
-            };
-
-            window.applyWallpaper = function(styleKey) {
-                let bgRule = "radial-gradient(circle at 50% 50%, #150c22 0%, #0d0714 100%)";
-                if (styleKey === "solid") bgRule = "#0b0510";
-                if (styleKey === "abstract") bgRule = "linear-gradient(180deg, #12071d 0%, #050208 100%)";
-                
-                const box = document.getElementById('messages-container');
-                if (box) box.style.background = bgRule;
-            };
-
-            // Register Drag and Drop parameters seamlessly 
-            function setupDragAndDrop() {
-                const zone = document.getElementById('drop-zone-overlay');
-                if (!zone) return;
-
-                window.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    zone.classList.remove('hidden');
-                });
-
-                zone.addEventListener('dragleave', (e) => {
-                    e.preventDefault();
-                    zone.classList.add('hidden');
-                });
-
-                window.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    zone.classList.add('hidden');
-                    
-                    if (e.dataTransfer.files.length > 0) {
-                        alert("Payload stream intercepted via drag drop loop. Media processing active.");
-                    }
-                });
-            }
-        });
-    </script>
+</div>
 {% endblock %}
-    
-        
-        
-                
-        

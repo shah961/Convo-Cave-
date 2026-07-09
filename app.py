@@ -57,34 +57,39 @@ def signup():
         username = request.form.get('username', '').strip().lower()
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password')
-        
+        phone = request.form.get('phone', '').strip()
+        country = request.form.get('country', 'Pakistan')
+        language = request.form.get('language', 'en')
+        timezone = request.form.get('timezone', 'PKT')
+        bio = request.form.get('bio', '').strip()
+
         if not username or not email or not password:
-            flash('All credential metrics are required.')
+            flash('Core credentials (Username, Email, Password) are required.')
             return redirect(url_for('signup'))
 
         # NoSQL Query: Check if the username parameter already exists under our /users tree
         users_ref = firebase_db.reference('users')
         existing_users = users_ref.order_by_child('username').equal_to(username).get()
         if existing_users:
-            flash('Username parameter already registered.')
+            flash('Username already registered.')
             return redirect(url_for('signup'))
-            
+
         # Check if email is already taken
         existing_emails = users_ref.order_by_child('email').equal_to(email).get()
         if existing_emails:
-            flash('Email parameter already registered.')
+            flash('Email already registered.')
             return redirect(url_for('signup'))
-            
+
         hashed_password = generate_password_hash(password, method='scrypt')
-        
+
         # Fetch current user snapshot count to determine the first master administrator
         all_users = users_ref.get()
         is_first = True if not all_users else False
-        
+
         # Create a new unique node ID inside the Firebase JSON tree
         new_user_ref = users_ref.push()
         user_id = new_user_ref.key
-        
+
         # Construct our decoupled user schema data profile
         user_payload = {
             "username": username,
@@ -93,15 +98,20 @@ def signup():
             "is_admin": is_first,
             "is_suspended": False,
             "is_banned": False,
+            "phone": phone,
+            "country": country,
+            "language": language,
+            "timezone": timezone,
+            "bio": bio,
             "created_at": int(datetime.utcnow().timestamp() * 1000)
         }
-        
+
         # Write directly to the database via NoSQL document push
         new_user_ref.set(user_payload)
-        
-        flash('Account verified. Proceed to log in.')
+
+        flash('Account initialized. Welcome to the protocol.')
         return redirect(url_for('login'))
-        
+
     return render_template('signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -110,19 +120,19 @@ def login():
         # Safely try getting 'login_input', falling back to 'username' or 'email' fields from HTML form
         raw_input = request.form.get('login_input') or request.form.get('username') or request.form.get('email') or ""
         login_input = raw_input.strip().lower()
-        
+
         if not login_input:
             flash('Please enter your username or email address.')
             return redirect(url_for('login'))
-            
+
         password = request.form.get('password')
-        
+
         users_ref = firebase_db.reference('users')
-        
+
         # Search NoSQL snapshot references matching either username or email input fields
         user_record = None
         user_id = None
-        
+
         by_username = users_ref.order_by_child('username').equal_to(login_input).get()
         if by_username:
             user_id = list(by_username.keys())[0]
@@ -132,20 +142,20 @@ def login():
             if by_email:
                 user_id = list(by_email.keys())[0]
                 user_record = by_email[user_id]
-                
+
         if not user_record or not check_password_hash(user_record.get('password_hash', ''), password):
             flash('Invalid login authentication vectors.')
             return redirect(url_for('login'))
-            
+
         if user_record.get('is_banned', False):
             flash('Access terminated. Account banned by administration.')
             return redirect(url_for('login'))
-            
+
         # Initialize our lightweight SessionUser instance to bind with Flask-Login
         from auth_helper import SessionUser
         session_user = SessionUser(user_id, user_record)
         login_user(session_user)
-        
+
         # Mint our secure, serverless Firebase Custom Token for direct browser socket syncing!
         try:
             custom_token = auth.create_custom_token(user_id)
@@ -154,9 +164,9 @@ def login():
             print(f"Token generation breakdown: {e}")
             flash('Token engine error. Please retry initialization.')
             return redirect(url_for('login'))
-            
+
         return redirect(url_for('dashboard'))
-        
+
     return render_template('login.html')
 
 
@@ -175,7 +185,7 @@ def logout():
 @login_required
 def dashboard():
     firebase_token = session.get('firebase_token', '')
-    
+
     # Gather configuration fields from environment variables safely for the client side
     firebase_config = {
         "apiKey": os.environ.get("FIREBASE_API_KEY", ""),
@@ -184,14 +194,14 @@ def dashboard():
         "projectId": os.environ.get("FIREBASE_PROJECT_ID", ""),
         "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET", "")
     }
-    
+
     # Create a dummy default_room object to keep dashboard.html from throwing an UndefinedError
     default_room_fallback = {
         "id": "general",
         "name": "# general"
     }
-    
-    return render_template('dashboard.html', 
+
+    return render_template('dashboard.html',
                            firebase_token=firebase_token,
                            firebase_config=firebase_config,
                            user_id=current_user.id,
@@ -221,16 +231,30 @@ def admin_panel():
         if action == 'ban_user' and target_id:
             users_ref.child(target_id).update({"is_banned": True})
             flash(f'User Node [{target_id[:8]}] successfully suspended.')
-        
+
         elif action == 'unban_user' and target_id:
             users_ref.child(target_id).update({"is_banned": False})
             flash(f'User Node [{target_id[:8]}] operational clearance restored.')
 
         elif action == 'delete_room' and target_id:
-            # Delete room configuration and its message cluster tree node
             rooms_ref.child(target_id).delete()
             firebase_db.reference(f'messages/{target_id}').delete()
             flash(f'Communication Room [{target_id}] permanently purged.')
+
+        elif action == 'system_broadcast':
+            message = request.form.get('broadcast_message', '').strip()
+            if message:
+                broadcast_payload = {
+                    "userId": "SYSTEM",
+                    "username": "SYSTEM BROADCAST",
+                    "content": f"📢 {message}",
+                    "timestamp": int(datetime.utcnow().timestamp() * 1000)
+                }
+                # Broadcast to all rooms
+                all_rooms = rooms_ref.get() or {}
+                for rid in all_rooms:
+                    firebase_db.reference(f'messages/{rid}').push(broadcast_payload)
+                flash('System broadcast transmitted to all nodes.')
 
         return redirect(url_for('admin_panel'))
 
@@ -238,11 +262,11 @@ def admin_panel():
     all_users = users_ref.get() or {}
     all_rooms = rooms_ref.get() or {}
 
-    return render_template('admin.html', 
-                           users=all_users, 
-                           rooms=all_rooms, 
+    return render_template('admin.html',
+                           users=all_users,
+                           rooms=all_rooms,
                            username=current_user.username)
-    
+
 
 # Serverless WSGI engine entry point fallback configuration
 if __name__ == '__main__':
