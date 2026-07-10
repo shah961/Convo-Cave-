@@ -90,13 +90,24 @@
     document.getElementById('active-room-desc').innerText = desc || 'Active Stream';
     loadMessages(id);
     watchTyping(id);
+
+    // Responsive Toggle: Hide sidebar and show chat on mobile
+    if (window.innerWidth < 1024) {
+        document.getElementById('sidebar-container').classList.add('hidden');
+        document.getElementById('main-chat-container').classList.remove('hidden');
+    }
+  };
+
+  window.showSidebar = () => {
+    document.getElementById('sidebar-container').classList.remove('hidden');
+    document.getElementById('main-chat-container').classList.add('hidden');
   };
 
   let activeMessagesListener = null;
   const loadMessages = (roomId) => {
     const log = document.getElementById('messages-log');
     log.innerHTML = '<div class="text-center py-20 animate-pulse text-[10px] font-black uppercase tracking-widest text-gray-700">Syncing Protocol...</div>';
-    
+
     if (activeMessagesListener) off(activeMessagesListener);
     activeMessagesListener = query(ref(db, `messages/${roomId}`), orderByChild('timestamp'), limitToLast(50));
 
@@ -192,7 +203,7 @@
         payload.replyToUser = replyingTo.user;
         payload.replyToContent = replyingTo.content;
     }
-    
+
     push(ref(db, `messages/${currentRoomId}`), payload).then(() => {
         input.value = '';
         cancelReply();
@@ -281,7 +292,7 @@
 
 <div class="flex h-screen bg-goDark text-gray-200 overflow-hidden relative">
     <!-- Sidebar -->
-    <aside class="w-80 bg-goMidnight border-r border-white/5 flex flex-col p-8 z-20">
+    <aside id="sidebar-container" class="w-full lg:w-80 bg-goMidnight border-r border-white/5 flex flex-col p-8 z-20 lg:flex">
         <div class="space-y-12 flex flex-col h-full">
             <div class="flex items-center gap-4">
                 <img src="/static/logo.png" alt="Convo Go" class="h-10 w-auto logo-glow">
@@ -344,11 +355,14 @@
     </aside>
 
     <!-- Main Chat -->
-    <main class="flex-grow flex flex-col h-full bg-goDark">
-        <header class="h-24 bg-goMidnight/50 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-12 z-10">
-            <div class="flex items-center gap-5">
-                <div class="w-12 h-12 rounded-2xl bg-goLime/10 text-goLime flex items-center justify-center border border-goLime/20">
-                    <i data-lucide="hash" class="w-6 h-6"></i>
+    <main id="main-chat-container" class="hidden lg:flex flex-grow flex flex-col h-full bg-goDark">
+        <header class="h-24 bg-goMidnight/50 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-6 lg:px-12 z-10">
+            <div class="flex items-center gap-4 lg:gap-5">
+                <button onclick="showSidebar()" class="lg:hidden p-2 text-gray-500 hover:text-goLime transition-all">
+                    <i data-lucide="reply" class="w-6 h-6 rotate-180"></i>
+                </button>
+                <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl bg-goLime/10 text-goLime flex items-center justify-center border border-goLime/20">
+                    <i data-lucide="hash" class="w-5 h-5 lg:w-6 lg:h-6"></i>
                 </div>
                 <div>
                     <h2 id="active-room-title" class="text-lg font-black text-white uppercase tracking-tighter">Protocol Node</h2>
