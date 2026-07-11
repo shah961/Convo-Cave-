@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="relative overflow-hidden min-h-screen flex flex-col justify-between bg-goDark text-gray-100 transition-colors duration-500" id="landing-body">
+<div class="relative overflow-hidden min-h-screen flex flex-col bg-goDark text-gray-100 transition-colors duration-500" id="landing-body">
 
     <!-- GSAP Floating Background Spheres -->
     <div id="orb1" class="absolute w-[400px] h-[400px] rounded-full bg-goLime opacity-10 blur-[120px] pointer-events-none top-10 left-10 transition-opacity"></div>
@@ -13,16 +13,13 @@
         <span class="text-xl font-black tracking-tighter text-white">CONVO <span class="text-goLime">GO</span></span>
     </a>
 
-    <!-- Navigation Menu -->
     <nav class="hidden md:flex space-x-8 text-sm font-semibold uppercase tracking-widest">
         <a href="#home" class="hover:text-goLime transition-colors">Home</a>
         <a href="#features" class="hover:text-goLime transition-colors">Features</a>
-        <a href="#why-choose" class="hover:text-goLime transition-colors">Why</a>
-        <a href="#testimonials" class="hover:text-goLime transition-colors">Reviews</a>
+        <a href="#pricing" class="hover:text-goLime transition-colors">Pricing</a>
         <a href="#faq" class="hover:text-goLime transition-colors">FAQ</a>
     </nav>
 
-    <!-- Dynamic Toolbar Actions -->
     <div class="flex items-center space-x-4">
         <a href="/login" class="hidden sm:inline-block px-5 py-2 text-xs font-bold uppercase tracking-widest hover:text-goLime transition-all">Login</a>
         <a href="/signup" class="px-6 py-2.5 text-xs rounded-full bg-goLime text-goDark font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(204,255,0,0.3)]">Sign Up</a>
@@ -30,7 +27,7 @@
 </header>
 
     <!-- 2. Hero Section -->
-    <section id="home" class="relative z-10 max-w-7xl mx-auto px-6 py-20 flex flex-col lg:flex-row items-center gap-12 w-full my-auto">
+    <section id="home" class="relative z-10 max-w-7xl mx-auto px-6 py-20 lg:py-32 flex flex-col lg:flex-row items-center gap-12 w-full">
         <div class="flex-1 text-center lg:text-left">
             <div class="inline-block px-4 py-1.5 mb-6 rounded-full border border-goLime/30 bg-goCard/50 text-goLime text-[10px] tracking-[0.2em] uppercase font-black opacity-0" id="hero-badge">
                 Next-Gen Realtime Protocol v3.0
@@ -40,96 +37,225 @@
                 <span class="text-goLime text-glow-lime">TALK FASTER.</span>
             </h2>
             <p class="text-gray-400 text-base md:text-lg max-w-xl mb-8 opacity-0 font-medium" id="hero-desc">
-                The ultimate high-performance workspace for real-time messaging, secure coordinates, and deep cloud synchronization.
+                High-performance workspace for real-time messaging, secure voice/video, and deep cloud synchronization.
             </p>
             <div class="flex flex-wrap justify-center lg:justify-start gap-4 opacity-0 mb-8" id="hero-cta">
                 <a href="/signup" class="px-10 py-4 rounded-full bg-white text-goDark font-black text-sm uppercase tracking-widest hover:bg-goLime transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                     Get Started
                 </a>
-                <a href="#features" class="px-10 py-4 rounded-full border border-white/10 hover:border-goLime hover:text-goLime font-black text-sm uppercase tracking-widest transition-all">
-                    Features
-                </a>
+                <div class="flex gap-2">
+                    <button class="px-6 py-4 rounded-full border border-white/10 hover:border-goLime transition-all flex items-center gap-2">
+                        <i data-lucide="apple" class="w-4 h-4"></i> <span class="text-[10px] font-black uppercase tracking-widest">App Store</span>
+                    </button>
+                    <button class="px-6 py-4 rounded-full border border-white/10 hover:border-goLime transition-all flex items-center gap-2">
+                        <i data-lucide="play" class="w-4 h-4"></i> <span class="text-[10px] font-black uppercase tracking-widest">Play Store</span>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Hero Graphic Concept -->
         <div class="flex-1 w-full max-w-md lg:max-w-none opacity-0" id="hero-gfx">
-            <div class="bg-goCard border border-white/5 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
+            <div class="bg-goCard border border-white/5 rounded-[3rem] p-8 shadow-2xl relative overflow-hidden group">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-goLime to-transparent opacity-50"></div>
                 <div class="space-y-6">
                     <div class="flex items-center justify-between">
                         <div class="flex gap-2">
-                            <div class="w-2.5 h-2.5 rounded-full bg-goLime/20 border border-goLime/40"></div>
-                            <div class="w-2.5 h-2.5 rounded-full bg-goLime/20 border border-goLime/40"></div>
-                            <div class="w-2.5 h-2.5 rounded-full bg-goLime/20 border border-goLime/40"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-goLime animate-pulse"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-goGray"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-goGray"></div>
                         </div>
-                        <div class="text-[10px] font-black text-goLime uppercase tracking-widest">System Active</div>
+                        <div class="text-[10px] font-black text-goLime uppercase tracking-widest">Signal Active</div>
                     </div>
-                    <div class="space-y-4">
-                        <div class="bg-goDark/50 p-4 rounded-2xl border border-white/5">
-                            <div class="w-20 h-2 bg-goGray rounded-full mb-3"></div>
-                            <div class="w-full h-2 bg-goGray/50 rounded-full"></div>
-                        </div>
-                        <div class="bg-goLime/10 p-4 rounded-2xl border border-goLime/20 ml-8">
-                            <div class="w-24 h-2 bg-goLime/40 rounded-full mb-3"></div>
-                            <div class="w-full h-2 bg-goLime/20 rounded-full"></div>
-                        </div>
+                    <div class="aspect-video bg-goDark/50 rounded-3xl border border-white/5 flex items-center justify-center relative group-hover:scale-[1.02] transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-goLime/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <i data-lucide="shield-check" class="w-16 h-16 text-goLime/20"></i>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- 3. Features Grid Section -->
+    <!-- 3. Features Section -->
     <section id="features" class="max-w-7xl mx-auto px-6 py-32 w-full relative z-10">
-        <div class="text-center mb-20 opacity-0 feature-header">
-            <h3 class="text-4xl md:text-5xl font-black tracking-tighter uppercase">Engineered for Speed</h3>
-            <p class="text-gray-500 mt-4 uppercase tracking-[0.3em] text-xs font-bold">The Go Protocol</p>
+        <div class="text-center mb-20 feature-header">
+            <h3 class="text-4xl md:text-6xl font-black tracking-tighter uppercase">Power Features</h3>
+            <p class="text-gray-500 mt-4 uppercase tracking-[0.3em] text-xs font-bold">Encrypted Protocol Expansion</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="features-grid">
-            <!-- Feature Card 1 -->
-            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group opacity-0 feature-card">
-                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform border border-goLime/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m13 2-2 10h9L11 22l2-10H5l8-10z"/></svg>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="features-grid">
+            <!-- Feature Cards (8 Total as requested) -->
+            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
+                    <i data-lucide="zap"></i>
                 </div>
-                <h4 class="text-xl font-black mb-4 uppercase tracking-tight">Zero Latency</h4>
-                <p class="text-sm text-gray-500 leading-relaxed font-medium">Real-time synchronization using advanced edge-optimized protocols.</p>
+                <h4 class="text-xl font-black mb-4 uppercase">Real-time Sync</h4>
+                <p class="text-sm text-gray-500 font-medium">Instant messaging with zero latency across all nodes.</p>
             </div>
-            <!-- Feature Card 2 -->
-            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group opacity-0 feature-card">
-                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform border border-goLime/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
+                    <i data-lucide="video"></i>
                 </div>
-                <h4 class="text-xl font-black mb-4 uppercase tracking-tight">Hardened Security</h4>
-                <p class="text-sm text-gray-500 leading-relaxed font-medium">End-to-end encrypted session clusters for total data insulation.</p>
+                <h4 class="text-xl font-black mb-4 uppercase">Voice & Video</h4>
+                <p class="text-sm text-gray-500 font-medium">Crystal clear HD communication with E2EE protection.</p>
             </div>
-            <!-- Feature Card 3 -->
-            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group opacity-0 feature-card">
-                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform border border-goLime/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
+                    <i data-lucide="users"></i>
                 </div>
-                <h4 class="text-xl font-black mb-4 uppercase tracking-tight">AI Augmented</h4>
-                <p class="text-sm text-gray-500 leading-relaxed font-medium">Native LLM integration for smart replies and instant translations.</p>
+                <h4 class="text-xl font-black mb-4 uppercase">Group Chats</h4>
+                <p class="text-sm text-gray-500 font-medium">Coordinate with thousands in high-performance clusters.</p>
+            </div>
+            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
+                    <i data-lucide="file-up"></i>
+                </div>
+                <h4 class="text-xl font-black mb-4 uppercase">File Sharing</h4>
+                <p class="text-sm text-gray-500 font-medium">Send massive data packets with instant cloud previews.</p>
+            </div>
+            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
+                    <i data-lucide="shield-lock"></i>
+                </div>
+                <h4 class="text-xl font-black mb-4 uppercase">End-to-End</h4>
+                <p class="text-sm text-gray-500 font-medium">Military grade encryption for every single transmission.</p>
+            </div>
+            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
+                    <i data-lucide="smartphone"></i>
+                </div>
+                <h4 class="text-xl font-black mb-4 uppercase">Multi-Device</h4>
+                <p class="text-sm text-gray-500 font-medium">Seamless sync between mobile, desktop, and web.</p>
+            </div>
+            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
+                    <i data-lucide="layers"></i>
+                </div>
+                <h4 class="text-xl font-black mb-4 uppercase">Status Updates</h4>
+                <p class="text-sm text-gray-500 font-medium">Share your coordinates with temporary stories.</p>
+            </div>
+            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
+                    <i data-lucide="moon"></i>
+                </div>
+                <h4 class="text-xl font-black mb-4 uppercase">Dark Mode</h4>
+                <p class="text-sm text-gray-500 font-medium">Elegant, eye-friendly interface built for the night.</p>
             </div>
         </div>
     </section>
 
-    <!-- 4. Footer -->
-    <footer class="w-full max-w-7xl mx-auto px-6 py-12 border-t border-white/5 z-20 relative flex flex-col md:flex-row justify-between items-center gap-6">
-        <div class="flex items-center gap-2">
-            <img src="/static/logo.png" alt="Convo Go" class="h-6 w-auto opacity-50">
-            <p class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600">&copy; 2026 CONVO GO PROTOCOL</p>
+    <!-- 4. Pricing / Premium Section -->
+    <section id="pricing" class="max-w-7xl mx-auto px-6 py-32 w-full relative z-10 border-t border-white/5">
+        <div class="text-center mb-20">
+            <h3 class="text-4xl md:text-5xl font-black tracking-tighter uppercase">Choose Your Plan</h3>
         </div>
-        <div class="flex space-x-8 text-[10px] font-black uppercase tracking-widest text-gray-600">
-            <a href="#" class="hover:text-goLime transition-colors">Privacy</a>
-            <a href="#" class="hover:text-goLime transition-colors">Terms</a>
-            <a href="/admin" class="text-goLime/50 hover:text-goLime transition-colors">Admin</a>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div class="bg-goCard border border-white/5 p-12 rounded-[3rem] space-y-8">
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Standard</h4>
+                    <p class="text-4xl font-black">FREE</p>
+                </div>
+                <ul class="space-y-4 text-sm font-medium text-gray-400">
+                    <li class="flex items-center gap-2 text-white"><i data-lucide="check" class="w-4 h-4 text-goLime"></i> Unlimited Messages</li>
+                    <li class="flex items-center gap-2 text-white"><i data-lucide="check" class="w-4 h-4 text-goLime"></i> HD Video Calls</li>
+                    <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4"></i> 2GB Cloud Storage</li>
+                </ul>
+                <button class="w-full py-4 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-goDark transition-all">Select Plan</button>
+            </div>
+            <div class="bg-white border border-goLime p-12 rounded-[3rem] space-y-8 shadow-[0_0_50px_rgba(204,255,0,0.2)] scale-105">
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Enterprise</h4>
+                    <p class="text-4xl font-black text-goDark">$9.99<span class="text-sm text-gray-400">/mo</span></p>
+                </div>
+                <ul class="space-y-4 text-sm font-medium text-goDark">
+                    <li class="flex items-center gap-2 font-bold"><i data-lucide="check" class="w-4 h-4 text-goLime"></i> 100GB Cloud Storage</li>
+                    <li class="flex items-center gap-2 font-bold"><i data-lucide="check" class="w-4 h-4 text-goLime"></i> AI Assistant Access</li>
+                    <li class="flex items-center gap-2 font-bold"><i data-lucide="check" class="w-4 h-4 text-goLime"></i> Custom App Themes</li>
+                </ul>
+                <button class="w-full py-4 bg-goDark text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-goLime transition-all">Get Premium</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. FAQ Section -->
+    <section id="faq" class="max-w-3xl mx-auto px-6 py-32 w-full relative z-10 border-t border-white/5">
+        <div class="text-center mb-16">
+            <h3 class="text-4xl font-black tracking-tighter uppercase">FAQ</h3>
+        </div>
+        <div class="space-y-4">
+            <div class="bg-goCard border border-white/5 rounded-3xl overflow-hidden">
+                <button class="w-full px-8 py-6 text-left flex justify-between items-center group" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                    <span class="text-sm font-bold uppercase tracking-tight">Is Convo Go truly end-to-end encrypted?</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-goLime group-hover:rotate-180 transition-transform"></i>
+                </button>
+                <div class="hidden px-8 pb-6 text-sm text-gray-500 font-medium">
+                    Yes, every message and call is protected by AES-256 and RSA encryption protocols.
+                </div>
+            </div>
+            <div class="bg-goCard border border-white/5 rounded-3xl overflow-hidden">
+                <button class="w-full px-8 py-6 text-left flex justify-between items-center group" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                    <span class="text-sm font-bold uppercase tracking-tight">Can I use it on multiple devices?</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-goLime group-hover:rotate-180 transition-transform"></i>
+                </button>
+                <div class="hidden px-8 pb-6 text-sm text-gray-500 font-medium">
+                    Absolutely. Convo Go syncs across web, desktop, and mobile instantly.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Footer -->
+    <footer class="w-full max-w-7xl mx-auto px-6 py-20 border-t border-white/5 z-20 relative">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
+            <div class="col-span-2 space-y-6">
+                <div class="flex items-center gap-2">
+                    <img src="/static/logo.png" alt="Convo Go" class="h-8 w-auto">
+                    <span class="text-xl font-black tracking-tighter">CONVO <span class="text-goLime">GO</span></span>
+                </div>
+                <p class="text-sm text-gray-600 max-w-xs font-medium leading-relaxed">
+                    The next-gen communication protocol for high-performance teams and individuals.
+                </p>
+                <div class="flex gap-4">
+                    <a href="#" class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-goLime hover:text-goDark transition-all"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+                    <a href="#" class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-goLime hover:text-goDark transition-all"><i data-lucide="github" class="w-4 h-4"></i></a>
+                    <a href="#" class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-goLime hover:text-goDark transition-all"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
+                </div>
+            </div>
+            <div class="space-y-6">
+                <h5 class="text-[10px] font-black uppercase tracking-[0.2em] text-white">Product</h5>
+                <ul class="space-y-4 text-xs font-bold text-gray-600">
+                    <li><a href="#features" class="hover:text-goLime transition-colors">Features</a></li>
+                    <li><a href="#pricing" class="hover:text-goLime transition-colors">Pricing</a></li>
+                    <li><a href="#" class="hover:text-goLime transition-colors">Security</a></li>
+                    <li><a href="#" class="hover:text-goLime transition-colors">AI Engine</a></li>
+                </ul>
+            </div>
+            <div class="space-y-6">
+                <h5 class="text-[10px] font-black uppercase tracking-[0.2em] text-white">Company</h5>
+                <ul class="space-y-4 text-xs font-bold text-gray-600">
+                    <li><a href="#" class="hover:text-goLime transition-colors">About</a></li>
+                    <li><a href="#" class="hover:text-goLime transition-colors">Careers</a></li>
+                    <li><a href="#" class="hover:text-goLime transition-colors">Blog</a></li>
+                    <li><a href="#" class="hover:text-goLime transition-colors">Terms</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">&copy; 2026 CONVO GO PROTOCOL. ALL RIGHTS RESERVED.</p>
+            <div class="flex gap-8 text-[10px] font-black uppercase tracking-widest text-gray-700">
+                <a href="#" class="hover:text-white">Privacy Policy</a>
+                <a href="#" class="hover:text-white">Cookies</a>
+            </div>
         </div>
     </footer>
 </div>
 
-<script>
+<script type="module">
+    import { createIcons, Zap, Video, Users, FileUp, ShieldLock, Smartphone, Layers, Moon, ChevronDown, Check, Apple, Play, Twitter, Github, Linkedin, ShieldCheck } from "https://unpkg.com/lucide@0.395.0/dist/esm/lucide.js";
+
     window.addEventListener('DOMContentLoaded', () => {
+        createIcons({
+            icons: { Zap, Video, Users, FileUp, ShieldLock, Smartphone, Layers, Moon, ChevronDown, Check, Apple, Play, Twitter, Github, Linkedin, ShieldCheck }
+        });
+
         gsap.registerPlugin(ScrollTrigger);
 
         // Background Animations
@@ -143,30 +269,17 @@
           .to("#hero-title", { opacity: 1, y: 0, duration: 1, ease: "expo.out" }, "-=0.6")
           .to("#hero-desc", { opacity: 1, y: 0, duration: 1, ease: "expo.out" }, "-=0.8")
           .to("#hero-cta", { opacity: 1, y: 0, duration: 1, ease: "expo.out" }, "-=0.8")
-          .to("#hero-gfx", { opacity: 1, x: 0, duration: 1.5, ease: "expo.out" }, "-=1");
+          .to("#hero-gfx", { opacity: 1, scale: 1, duration: 1.5, ease: "expo.out" }, "-=1");
 
         // Scroll Reveal Animations
         gsap.to(".feature-header", {
-            scrollTrigger: {
-                trigger: ".feature-header",
-                start: "top 90%",
-            },
-            opacity: 1,
-            y: 0,
-            duration: 1,
-            ease: "expo.out"
+            scrollTrigger: { trigger: ".feature-header", start: "top 90%" },
+            opacity: 1, y: 0, duration: 1, ease: "expo.out"
         });
 
         gsap.to(".feature-card", {
-            scrollTrigger: {
-                trigger: "#features-grid",
-                start: "top 80%",
-            },
-            opacity: 1,
-            y: 0,
-            duration: 1,
-            stagger: 0.2,
-            ease: "expo.out"
+            scrollTrigger: { trigger: "#features-grid", start: "top 80%" },
+            opacity: 1, y: 0, duration: 1, stagger: 0.1, ease: "expo.out"
         });
     });
 </script>

@@ -7,7 +7,7 @@
   import { getDatabase, ref, onValue, push, set, serverTimestamp, query, limitToLast, orderByChild, remove, update, onDisconnect, off } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
   // Lucide Icon System
-  import { createIcons, Hash, PlusCircle, ShieldAlert, Sliders, LogOut, Terminal, Users, Info, Paperclip, Send, X, UploadCloud, RefreshCw, MessageSquareDashed, Check, CheckCheck, Edit3, Trash2, Reply, Smile, MoreVertical } from "https://unpkg.com/lucide@0.395.0/dist/esm/lucide.js";
+  import { createIcons, MessageSquare, Phone, Layers, Settings, Search, MoreVertical, Hash, PlusCircle, ShieldAlert, LogOut, Terminal, Users, Info, Paperclip, Send, X, UploadCloud, RefreshCw, MessageSquareDashed, Check, CheckCheck, Edit3, Trash2, Reply, Smile, Star, Pin, Archive, Filter, Image, Video, FileText, MapPin, BarChart2, Mic, Sparkles, Plus, Camera, ShieldLock, LayoutDashboard } from "https://unpkg.com/lucide@0.395.0/dist/esm/lucide.js";
 
   const firebaseConfig = {{ firebase_config | tojson | safe }};
   const app = initializeApp(firebaseConfig);
@@ -22,10 +22,11 @@
   let currentRoomId = defaultRoomId;
   let replyingTo = null;
   let editingMessageId = null;
+  let activeTab = 'chats'; // chats, calls, status, settings
 
   // Initialize UI Icons
   const initIcons = () => createIcons({
-    icons: { Hash, PlusCircle, ShieldAlert, Sliders, LogOut, Terminal, Users, Info, Paperclip, Send, X, UploadCloud, RefreshCw, MessageSquareDashed, Check, CheckCheck, Edit3, Trash2, Reply, Smile, MoreVertical }
+    icons: { MessageSquare, Phone, Layers, Settings, Search, MoreVertical, Hash, PlusCircle, ShieldAlert, LogOut, Terminal, Users, Info, Paperclip, Send, X, UploadCloud, RefreshCw, MessageSquareDashed, Check, CheckCheck, Edit3, Trash2, Reply, Smile, Star, Pin, Archive, Filter, Image, Video, FileText, MapPin, BarChart2, Mic, Sparkles, Plus, Camera, ShieldLock, LayoutDashboard }
   });
   initIcons();
 
@@ -37,7 +38,7 @@
     });
   }
 
-  // User Presence & Typing Status
+  // User Presence
   const userStatusRef = ref(db, `status/${currentUserId}`);
   set(userStatusRef, { state: 'online', last_changed: serverTimestamp() });
   onDisconnect(userStatusRef).set({ state: 'offline', last_changed: serverTimestamp() });
@@ -53,17 +54,28 @@
     activeTypingRef = ref(db, `typing/${roomId}`);
     onValue(activeTypingRef, (snapshot) => {
         const typers = snapshot.val();
-    const typingIndicator = document.getElementById('typing-indicator');
-    if (typers) {
-        const others = Object.values(typers).filter(t => t.username !== currentUsername);
-        if (others.length > 0) {
-            typingIndicator.innerText = `${others[0].username} is typing...`;
-            typingIndicator.classList.remove('hidden');
-            return;
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typers) {
+            const others = Object.values(typers).filter(t => t.username !== currentUsername);
+            if (others.length > 0) {
+                typingIndicator.innerText = `${others[0].username} is typing...`;
+                typingIndicator.classList.remove('hidden');
+                return;
+            }
         }
-    }
-    typingIndicator.classList.add('hidden');
-  });
+        typingIndicator.classList.add('hidden');
+    });
+  };
+
+  // Switch Tabs (WhatsApp Style)
+  window.switchTab = (tab) => {
+    activeTab = tab;
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`${tab}-tab`).classList.remove('hidden');
+
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('text-goLime'));
+    document.getElementById(`nav-${tab}`).classList.add('text-goLime');
+  };
 
   // Room Listener
   const roomsRef = ref(db, 'rooms');
@@ -75,11 +87,26 @@
     if (rooms) {
         Object.entries(rooms).forEach(([id, room]) => {
             const isActive = id === currentRoomId;
-            const btn = document.createElement('button');
-            btn.className = `w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-goLime text-goDark shadow-[0_0_15px_rgba(204,255,0,0.2)]' : 'text-gray-500 hover:bg-white/5 hover:text-white'}`;
-            btn.onclick = () => switchRoom(id, room.name, room.desc);
-            btn.innerHTML = `<span># ${room.name}</span>${isActive ? '<span class="w-1.5 h-1.5 rounded-full bg-goDark"></span>' : ''}`;
-            container.appendChild(btn);
+            const div = document.createElement('div');
+            div.className = `room-item group flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-white/[0.03] transition-all ${isActive ? 'bg-white/[0.05]' : ''}`;
+            div.onclick = () => switchRoom(id, room.name, room.desc);
+
+            div.innerHTML = `
+                <div class="w-12 h-12 rounded-2xl bg-goGray flex items-center justify-center text-gray-500 font-black shrink-0 ${isActive ? 'text-goLime' : ''}">
+                    ${room.name.charAt(0).toUpperCase()}
+                </div>
+                <div class="flex-grow min-w-0 border-b border-white/5 pb-4 group-last:border-0 h-full">
+                    <div class="flex justify-between items-center mb-1">
+                        <h4 class="text-sm font-black uppercase tracking-tight text-white truncate">${room.name}</h4>
+                        <span class="text-[9px] font-medium text-gray-600">12:45 PM</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <p class="text-[11px] text-gray-500 truncate">${room.desc || 'No messages yet...'}</p>
+                        ${isActive ? '<span class="w-2 h-2 rounded-full bg-goLime shadow-[0_0_10px_rgba(204,255,0,0.5)]"></span>' : ''}
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
         });
     }
   });
@@ -91,7 +118,6 @@
     loadMessages(id);
     watchTyping(id);
 
-    // Responsive Toggle: Hide sidebar and show chat on mobile
     if (window.innerWidth < 1024) {
         document.getElementById('sidebar-container').classList.add('hidden');
         document.getElementById('main-chat-container').classList.remove('hidden');
@@ -109,7 +135,7 @@
     log.innerHTML = '<div class="text-center py-20 animate-pulse text-[10px] font-black uppercase tracking-widest text-gray-700">Syncing Protocol...</div>';
 
     if (activeMessagesListener) off(activeMessagesListener);
-    activeMessagesListener = query(ref(db, `messages/${roomId}`), orderByChild('timestamp'), limitToLast(50));
+    activeMessagesListener = query(ref(db, `messages/${roomId}`), orderByChild('timestamp'), limitToLast(100));
 
     onValue(activeMessagesListener, (snapshot) => {
         log.innerHTML = '';
@@ -131,15 +157,14 @@
     const log = document.getElementById('messages-log');
     const isMe = msg.userId === currentUserId;
     const div = document.createElement('div');
-    div.id = `msg-${mid}`;
-    div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1 mb-4 group`;
+    div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1 mb-4 group px-4 lg:px-0`;
 
     div.innerHTML = `
         <div class="flex items-center gap-2 mb-1 px-2">
             <span class="text-[9px] font-black uppercase tracking-widest ${isMe ? 'text-goLime' : 'text-gray-500'}">${msg.username}</span>
             <span class="text-[8px] font-medium text-gray-700">${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
         </div>
-        <div class="relative max-w-[85%] md:max-w-[70%] flex items-center gap-2 ${isMe ? 'flex-row-reverse' : ''}">
+        <div class="relative max-w-[90%] md:max-w-[70%] flex items-center gap-2 ${isMe ? 'flex-row-reverse' : ''}">
             <div class="px-5 py-3.5 rounded-[1.5rem] text-sm font-medium leading-relaxed shadow-sm ${isMe ? 'bg-white text-goDark rounded-tr-none' : 'bg-goCard text-gray-200 border border-white/5 rounded-tl-none'}">
                 ${msg.replyToContent ? `
                     <div class="mb-3 p-3 bg-black/5 rounded-xl border-l-4 border-goLime text-[10px] font-bold opacity-60 flex flex-col gap-1">
@@ -153,18 +178,10 @@
                    ${isMe ? '<i data-lucide="check-check" class="w-3 h-3"></i>' : ''}
                 </div>
             </div>
-
             <div class="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onclick="setReply('${mid}', '${msg.username}', '${msg.content.replace(/'/g, "\\'")}')" class="p-2 bg-white/5 hover:bg-goLime/20 rounded-full text-gray-600 hover:text-goLime transition-all" title="Reply">
-                    <i data-lucide="reply" class="w-3.5 h-3.5"></i>
-                </button>
+                <button onclick="setReply('${mid}', '${msg.username}', '${msg.content.replace(/'/g, "\\'")}')" class="p-2 bg-white/5 hover:bg-goLime/20 rounded-full text-gray-600 hover:text-goLime"><i data-lucide="reply" class="w-3.5 h-3.5"></i></button>
                 ${isMe ? `
-                <button onclick="editMessage('${mid}', '${msg.content.replace(/'/g, "\\'")}')" class="p-2 bg-white/5 hover:bg-goLime/20 rounded-full text-gray-600 hover:text-goLime transition-all" title="Edit">
-                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                </button>
-                <button onclick="deleteMessage('${mid}')" class="p-2 bg-white/5 hover:bg-red-500/20 rounded-full text-gray-600 hover:text-red-500 transition-all" title="Delete">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                </button>
+                <button onclick="editMessage('${mid}', '${msg.content.replace(/'/g, "\\'")}')" class="p-2 bg-white/5 hover:bg-goLime/20 rounded-full text-gray-600 hover:text-goLime"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
                 ` : ''}
             </div>
         </div>
@@ -180,9 +197,7 @@
 
     if (editingMessageId) {
         update(ref(db, `messages/${currentRoomId}/${editingMessageId}`), {
-            content: content,
-            edited: true,
-            lastUpdated: serverTimestamp()
+            content: content, edited: true, lastUpdated: serverTimestamp()
         }).then(() => {
             editingMessageId = null;
             input.value = '';
@@ -192,18 +207,13 @@
     }
 
     const payload = {
-        userId: currentUserId,
-        username: currentUsername,
-        content: content,
-        timestamp: serverTimestamp(),
+        userId: currentUserId, username: currentUsername, content: content, timestamp: serverTimestamp(),
     };
-
     if (replyingTo) {
         payload.replyToId = replyingTo.id;
         payload.replyToUser = replyingTo.user;
         payload.replyToContent = replyingTo.content;
     }
-
     push(ref(db, `messages/${currentRoomId}`), payload).then(() => {
         input.value = '';
         cancelReply();
@@ -211,268 +221,240 @@
     });
   };
 
-  window.deleteMessage = (mid) => {
-    if (confirm("Permanently terminate this message signal?")) {
-        remove(ref(db, `messages/${currentRoomId}/${mid}`));
-    }
+  window.aiSummarize = () => {
+    alert("AI Protocol engaged: Analyzing message cluster... [MOCK]");
   };
 
-  window.setReply = (mid, user, content) => {
-    replyingTo = { id: mid, user: user, content: content };
-    const preview = document.getElementById('reply-preview');
-    preview.classList.remove('hidden');
-    preview.querySelector('.reply-user').innerText = user;
-    preview.querySelector('.reply-text').innerText = content;
+  // Profile Update Placeholder
+  window.triggerProfileUpdate = () => {
+    alert("Profile sync active. Node updated.");
+    closeModal('profile-modal');
+  };
+
+  // Global Exports
+  window.setReply = (id, user, content) => {
+    replyingTo = { id, user, content };
+    document.getElementById('reply-preview').classList.remove('hidden');
+    document.getElementById('reply-user-display').innerText = user;
+    document.getElementById('reply-text-display').innerText = content;
     document.getElementById('message-input').focus();
   };
-
   window.cancelReply = () => {
     replyingTo = null;
     document.getElementById('reply-preview').classList.add('hidden');
   };
-
-  window.editMessage = (mid, content) => {
-    editingMessageId = mid;
-    const input = document.getElementById('message-input');
-    input.value = content;
+  window.editMessage = (id, content) => {
+    editingMessageId = id;
+    document.getElementById('message-input').value = content;
     document.getElementById('edit-indicator').classList.remove('hidden');
-    input.focus();
+    document.getElementById('message-input').focus();
   };
-
   window.cancelEdit = () => {
     editingMessageId = null;
     document.getElementById('message-input').value = '';
     document.getElementById('edit-indicator').classList.add('hidden');
   };
-
-  // UI Event Handlers
-  const messageInput = document.getElementById('message-input');
-  messageInput.oninput = () => {
-    setTyping(messageInput.value.length > 0);
-  };
-
-  window.triggerRoomCreation = () => {
-    const slug = document.getElementById('new-room-id').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
-    const name = document.getElementById('new-room-name').value.trim();
-    if (!slug || !name) return;
-    set(ref(db, `rooms/${slug}`), { id: slug, name: name, desc: 'Protocol Node active' }).then(() => {
-        closeModal('create-room-modal');
-        document.getElementById('new-room-id').value = '';
-        document.getElementById('new-room-name').value = '';
-    });
-  };
-
-  // Helper functions for auth onDisconnect (modular requires special handling)
-  // Actually onDisconnect is available in Modular SDK via getDatabase() functions but needs different import
-  // But for now we skip complex presence for stability
-
   window.openModal = (id) => document.getElementById(id).classList.remove('hidden');
   window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
-  window.catchInputReturn = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        transmitMessage();
-    }
-  };
+  window.catchInputReturn = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); transmitMessage(); } };
 
-  // Initial Message Load
-  loadMessages(currentRoomId);
+  // Typing listener
+  document.getElementById('message-input').addEventListener('input', (e) => {
+    setTyping(e.target.value.length > 0);
+  });
+
+  // Initial Load
+  switchTab('chats');
 
 </script>
 
-<style>
-    :root {
-        --chat-font-size: 14px;
-    }
-    #messages-container { font-size: var(--chat-font-size); scrollbar-width: thin; scrollbar-color: #2a2a2a transparent; }
-    #messages-container::-webkit-scrollbar { width: 4px; }
-    #messages-container::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 10px; }
-    .lucide { width: 18px; height: 18px; }
-</style>
-
 <div class="flex h-screen bg-goDark text-gray-200 overflow-hidden relative">
-    <!-- Sidebar -->
-    <aside id="sidebar-container" class="w-full lg:w-80 bg-goMidnight border-r border-white/5 flex flex-col p-8 z-20 lg:flex">
-        <div class="space-y-12 flex flex-col h-full">
-            <div class="flex items-center gap-4">
-                <img src="/static/logo.png" alt="Convo Go" class="h-10 w-auto logo-glow">
-                <span class="text-2xl font-black tracking-tighter text-white uppercase">Go <span class="text-goLime">Protocol</span></span>
-            </div>
 
-            <!-- Profile Summary -->
-            <div class="bg-goCard border border-white/5 p-6 rounded-[2.5rem] space-y-4 relative group overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onclick="openModal('profile-modal')" class="p-2 bg-white/5 rounded-xl text-gray-500 hover:text-goLime transition-all">
-                        <i data-lucide="sliders" class="w-4 h-4"></i>
-                    </button>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-goLime text-goDark flex items-center justify-center font-black text-xl shadow-[0_0_20px_rgba(204,255,0,0.1)]">
-                        {{ username[:1].upper() }}
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-black uppercase tracking-tight text-white">{{ username }}</h3>
-                        <p class="text-[9px] font-black uppercase tracking-widest text-goLime">Active Session</p>
-                    </div>
-                </div>
-                <div class="pt-4 border-t border-white/5 space-y-2">
-                    <div class="flex justify-between text-[9px] font-black uppercase tracking-widest">
-                        <span class="text-gray-600">Location</span>
-                        <span class="text-white">{{ current_user.profile.country }}</span>
-                    </div>
-                    <div class="flex justify-between text-[9px] font-black uppercase tracking-widest">
-                        <span class="text-gray-600">Access</span>
-                        <span class="{{ 'text-goLime' if current_user.is_admin else 'text-white' }}">{{ 'Master Admin' if current_user.is_admin else 'Standard' }}</span>
-                    </div>
+    <!-- WhatsApp-Style Side Navigation -->
+    <nav class="w-16 lg:w-20 bg-goDark border-r border-white/5 flex flex-col items-center py-8 gap-8 z-30">
+        <img src="/static/logo.png" alt="Logo" class="w-8 h-8 lg:w-10 lg:h-10">
+        <div class="flex flex-col gap-6 lg:gap-8 flex-grow">
+            <button id="nav-chats" onclick="switchTab('chats')" class="nav-btn p-3 lg:p-4 rounded-2xl hover:bg-white/5 transition-all text-goLime"><i data-lucide="message-square"></i></button>
+            <button id="nav-calls" onclick="switchTab('calls')" class="nav-btn p-3 lg:p-4 rounded-2xl hover:bg-white/5 transition-all text-gray-600"><i data-lucide="phone"></i></button>
+            <button id="nav-status" onclick="switchTab('status')" class="nav-btn p-3 lg:p-4 rounded-2xl hover:bg-white/5 transition-all text-gray-600"><i data-lucide="layers"></i></button>
+        </div>
+        <button id="nav-settings" onclick="switchTab('settings')" class="nav-btn p-3 lg:p-4 rounded-2xl hover:bg-white/5 transition-all text-gray-600 mb-4"><i data-lucide="settings"></i></button>
+        <button onclick="openModal('profile-modal')" class="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl overflow-hidden bg-goLime text-goDark font-black flex items-center justify-center">
+            {{ username[:1].upper() }}
+        </button>
+    </nav>
+
+    <!-- Sidebar (Chat List / Search) -->
+    <aside id="sidebar-container" class="w-full lg:w-[400px] bg-goMidnight border-r border-white/5 flex flex-col z-20">
+        <header class="p-6 lg:p-8 space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl lg:text-2xl font-black uppercase tracking-tighter text-white">Go <span class="text-goLime">Protocol</span></h2>
+                <div class="flex gap-2">
+                    <button class="p-2 text-gray-500 hover:text-white"><i data-lucide="plus-circle" class="w-5 h-5"></i></button>
+                    <button class="p-2 text-gray-500 hover:text-white"><i data-lucide="filter" class="w-5 h-5"></i></button>
                 </div>
             </div>
-
-            <!-- Room List -->
-            <div class="flex-grow space-y-6 overflow-y-auto">
-                <div class="flex items-center justify-between px-2">
-                    <span class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">Nodes</span>
-                    <button onclick="openModal('create-room-modal')" class="text-goLime hover:scale-110 transition-transform">
-                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                    </button>
-                </div>
-                <div id="rooms-list-container" class="space-y-3"></div>
+            <div class="relative">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700"></i>
+                <input type="text" placeholder="Search signals..." class="w-full bg-goDark border border-white/5 rounded-2xl py-3.5 pl-12 pr-4 text-xs font-bold text-white outline-none focus:border-goLime/30 transition-all placeholder:text-gray-700">
             </div>
+        </header>
 
-            <!-- Sidebar Actions -->
-            <div class="space-y-3">
+        <!-- Tab Contents -->
+        <div id="chats-tab" class="tab-content flex-grow overflow-y-auto">
+            <div id="rooms-list-container"></div>
+        </div>
+
+        <div id="calls-tab" class="tab-content hidden flex-grow p-8 text-center space-y-4">
+            <i data-lucide="phone" class="w-12 h-12 mx-auto text-gray-800"></i>
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-600">No recent call records</p>
+        </div>
+
+        <div id="status-tab" class="tab-content hidden flex-grow p-8 space-y-6">
+            <div class="flex items-center gap-4 p-4 bg-white/5 rounded-[2rem] border border-white/5">
+                <div class="w-12 h-12 rounded-2xl bg-goLime text-goDark font-black flex items-center justify-center">
+                    <i data-lucide="plus"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-tight">My Status</h4>
+                    <p class="text-[10px] text-gray-600 font-bold uppercase">Tap to share coord</p>
+                </div>
+            </div>
+            <h5 class="text-[9px] font-black uppercase tracking-widest text-gray-700 ml-2">Recent Protocols</h5>
+            <div class="text-center py-10 text-[10px] font-black text-gray-800">NO RECENT UPDATES</div>
+        </div>
+
+        <div id="settings-tab" class="tab-content hidden flex-grow overflow-y-auto">
+            <div class="p-6 lg:p-8 space-y-2">
+                <div class="p-4 flex items-center gap-4 hover:bg-white/5 rounded-2xl cursor-pointer">
+                    <i data-lucide="shield-lock" class="text-gray-500"></i>
+                    <div><h4 class="text-xs font-black uppercase tracking-tight">Account Security</h4><p class="text-[9px] text-gray-700 font-bold">2FA, Sessions</p></div>
+                </div>
+                <div class="p-4 flex items-center gap-4 hover:bg-white/5 rounded-2xl cursor-pointer">
+                    <i data-lucide="shield-alert" class="text-gray-500"></i>
+                    <div><h4 class="text-xs font-black uppercase tracking-tight">Privacy Center</h4><p class="text-[9px] text-gray-700 font-bold">Last seen, Blocked</p></div>
+                </div>
+                <div class="p-4 flex items-center gap-4 hover:bg-white/5 rounded-2xl cursor-pointer">
+                    <i data-lucide="image" class="text-gray-500"></i>
+                    <div><h4 class="text-xs font-black uppercase tracking-tight">Chat Appearance</h4><p class="text-[9px] text-gray-700 font-bold">Wallpaper, Theme</p></div>
+                </div>
                 {% if current_user.is_admin %}
-                <a href="/admin" class="flex items-center gap-3 w-full bg-goLime/5 border border-goLime/10 px-6 py-4 rounded-2xl text-goLime font-black text-[10px] uppercase tracking-widest hover:bg-goLime hover:text-goDark transition-all">
-                    <i data-lucide="shield-alert"></i>
-                    <span>Admin System</span>
+                <a href="/admin" class="p-4 flex items-center gap-4 hover:bg-goLime/10 text-goLime rounded-2xl">
+                    <i data-lucide="layout-dashboard"></i>
+                    <div><h4 class="text-xs font-black uppercase tracking-tight">Admin Console</h4></div>
                 </a>
                 {% endif %}
-                <a href="/logout" class="flex items-center gap-3 w-full bg-white/5 border border-white/5 px-6 py-4 rounded-2xl text-white font-black text-[10px] uppercase tracking-widest hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 transition-all">
+                <a href="/logout" class="p-4 flex items-center gap-4 hover:bg-red-500/10 text-red-500 rounded-2xl mt-10">
                     <i data-lucide="log-out"></i>
-                    <span>End Session</span>
+                    <div><h4 class="text-xs font-black uppercase tracking-tight">Terminate Protocol</h4></div>
                 </a>
             </div>
         </div>
     </aside>
 
-    <!-- Main Chat -->
-    <main id="main-chat-container" class="hidden lg:flex flex-grow flex flex-col h-full bg-goDark">
+    <!-- Main Chat Window -->
+    <main id="main-chat-container" class="hidden lg:flex flex-grow flex flex-col h-full bg-goDark relative">
         <header class="h-24 bg-goMidnight/50 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-6 lg:px-12 z-10">
-            <div class="flex items-center gap-4 lg:gap-5">
+            <div class="flex items-center gap-4 lg:gap-6 min-w-0">
                 <button onclick="showSidebar()" class="lg:hidden p-2 text-gray-500 hover:text-goLime transition-all">
                     <i data-lucide="reply" class="w-6 h-6 rotate-180"></i>
                 </button>
-                <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl bg-goLime/10 text-goLime flex items-center justify-center border border-goLime/20">
+                <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl bg-goLime text-goDark flex items-center justify-center border border-white/5 font-black shrink-0">
                     <i data-lucide="hash" class="w-5 h-5 lg:w-6 lg:h-6"></i>
                 </div>
-                <div>
-                    <h2 id="active-room-title" class="text-lg font-black text-white uppercase tracking-tighter">Protocol Node</h2>
+                <div class="min-w-0">
+                    <h2 id="active-room-title" class="text-sm lg:text-lg font-black text-white uppercase tracking-tighter truncate">Select Node</h2>
                     <div class="flex items-center gap-2">
-                        <span id="active-room-desc" class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Awaiting Signal</span>
-                        <span id="typing-indicator" class="hidden text-[10px] text-goLime font-black uppercase tracking-widest animate-pulse"></span>
+                        <span id="active-room-desc" class="text-[9px] lg:text-[10px] text-gray-600 font-bold uppercase tracking-widest truncate">Awaiting Signal</span>
+                        <span id="typing-indicator" class="hidden text-[9px] lg:text-[10px] text-goLime font-black uppercase tracking-widest animate-pulse"></span>
                     </div>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <button class="p-3 bg-white/5 rounded-xl text-gray-500 hover:text-white transition-all">
-                    <i data-lucide="users"></i>
+            <div class="flex items-center gap-2 lg:gap-4 shrink-0">
+                <button onclick="aiSummarize()" class="hidden md:flex items-center gap-2 px-4 py-2 bg-goLime/10 border border-goLime/20 rounded-xl text-[9px] font-black uppercase tracking-widest text-goLime hover:bg-goLime hover:text-goDark transition-all">
+                    <i data-lucide="sparkles" class="w-3 h-3"></i> AI Summarize
                 </button>
-                <button onclick="openModal('room-details-modal')" class="p-3 bg-white/5 rounded-xl text-gray-500 hover:text-white transition-all">
-                    <i data-lucide="info"></i>
-                </button>
+                <button class="p-2 lg:p-3 bg-white/5 rounded-xl text-gray-500 hover:text-white transition-all"><i data-lucide="phone"></i></button>
+                <button class="p-2 lg:p-3 bg-white/5 rounded-xl text-gray-500 hover:text-white transition-all"><i data-lucide="video"></i></button>
+                <button class="p-2 lg:p-3 bg-white/5 rounded-xl text-gray-500 hover:text-white transition-all"><i data-lucide="more-vertical"></i></button>
             </div>
         </header>
 
-        <div id="messages-container" class="flex-grow overflow-y-auto p-12 space-y-8">
+        <div id="messages-container" class="flex-grow overflow-y-auto p-4 lg:p-12 space-y-6 lg:space-y-8 scroll-smooth">
             <div id="messages-log" class="max-w-5xl mx-auto w-full"></div>
         </div>
 
-        <footer class="p-10 bg-goDark relative">
+        <footer class="p-6 lg:p-10 bg-goDark">
             <div class="max-w-5xl mx-auto w-full relative">
-
-                <!-- Reply Preview -->
-                <div id="reply-preview" class="hidden absolute bottom-full left-0 right-0 mb-2 px-6 py-4 bg-goCard border border-goLime/20 rounded-3xl flex flex-col gap-1 animate-in slide-in-from-bottom-2 duration-200">
+                <!-- Indicators -->
+                <div id="reply-preview" class="hidden absolute bottom-full left-0 right-0 mb-4 px-6 py-4 bg-goCard border border-goLime/20 rounded-3xl flex flex-col gap-1 animate-in slide-in-from-bottom-2">
                     <div class="flex justify-between items-center">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-goLime">Replying to <span class="reply-user text-white"></span></span>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-goLime">Replying to <span id="reply-user-display" class="text-white"></span></span>
                         <button onclick="cancelReply()" class="text-gray-600 hover:text-white"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
                     </div>
-                    <p class="reply-text text-xs text-gray-500 truncate italic"></p>
+                    <p id="reply-text-display" class="text-xs text-gray-500 truncate italic"></p>
                 </div>
 
-                <!-- Edit Indicator -->
-                <div id="edit-indicator" class="hidden absolute bottom-full left-0 mb-2 px-4 py-2 bg-goLime text-goDark text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-2 shadow-lg">
-                    <i data-lucide="edit-3" class="w-3 h-3"></i>
-                    <span>Editing Mode</span>
+                <div id="edit-indicator" class="hidden absolute bottom-full left-0 mb-4 px-4 py-2 bg-goLime text-goDark text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-2 shadow-lg">
+                    <i data-lucide="edit-3" class="w-3 h-3"></i><span>Editing Mode</span>
                     <button onclick="cancelEdit()" class="ml-2 hover:opacity-50"><i data-lucide="x" class="w-3 h-3"></i></button>
                 </div>
 
-                <form id="message-form" onsubmit="transmitMessage(event)" class="flex items-center gap-5 bg-goCard border border-white/5 p-3 rounded-[2.5rem] shadow-2xl focus-within:border-goLime/30 transition-all">
-                    <button type="button" class="p-4 text-gray-600 hover:text-goLime transition-all">
-                        <i data-lucide="smile"></i>
-                    </button>
-                    <button type="button" class="p-4 text-gray-600 hover:text-goLime transition-all">
-                        <i data-lucide="paperclip"></i>
-                    </button>
-                    <textarea id="message-input" onkeydown="catchInputReturn(event)" rows="1" placeholder="Type a message into the protocol..." class="flex-grow bg-transparent border-0 outline-none resize-none py-3 text-sm text-white placeholder-gray-700 font-medium"></textarea>
-                    <button type="submit" class="w-14 h-14 bg-goLime text-goDark rounded-[1.5rem] flex items-center justify-center shadow-[0_0_30px_rgba(204,255,0,0.2)] hover:scale-105 active:scale-95 transition-all">
-                        <i data-lucide="send" class="w-6 h-6"></i>
+                <form onsubmit="transmitMessage(event)" class="flex items-center gap-3 lg:gap-5 bg-goCard border border-white/5 p-2 lg:p-3 rounded-[2.5rem] shadow-2xl focus-within:border-goLime/30 transition-all">
+                    <button type="button" class="hidden md:flex p-4 text-gray-600 hover:text-goLime"><i data-lucide="smile"></i></button>
+                    <div class="relative group">
+                        <button type="button" class="p-4 text-gray-600 hover:text-goLime"><i data-lucide="paperclip"></i></button>
+                        <div class="absolute bottom-full left-0 mb-4 hidden group-focus-within:flex flex-col gap-2 bg-goCard border border-white/5 p-2 rounded-2xl shadow-2xl">
+                             <button type="button" class="p-3 hover:bg-white/5 rounded-xl text-blue-500"><i data-lucide="image"></i></button>
+                             <button type="button" class="p-3 hover:bg-white/5 rounded-xl text-purple-500"><i data-lucide="file-text"></i></button>
+                             <button type="button" class="p-3 hover:bg-white/5 rounded-xl text-goLime"><i data-lucide="map-pin"></i></button>
+                        </div>
+                    </div>
+                    <textarea id="message-input" onkeydown="catchInputReturn(event)" rows="1" placeholder="Type a message..." class="flex-grow bg-transparent border-0 outline-none resize-none py-3 text-sm text-white placeholder-gray-800 font-medium"></textarea>
+                    <button type="button" class="p-4 text-gray-600 hover:text-goLime"><i data-lucide="mic"></i></button>
+                    <button type="submit" class="w-12 h-12 lg:w-14 lg:h-14 bg-goLime text-goDark rounded-[1.5rem] flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all">
+                        <i data-lucide="send" class="w-5 h-5 lg:w-6 lg:h-6"></i>
                     </button>
                 </form>
             </div>
         </footer>
     </main>
 
-    <!-- Create Room Modal -->
-    <div id="create-room-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center p-8">
-        <div class="bg-goCard border border-white/5 w-full max-w-md rounded-[3rem] p-12 space-y-10 shadow-[0_0_100px_rgba(0,0,0,0.5)]">
+    <!-- Modals -->
+    <div id="profile-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-2xl z-50 flex items-center justify-center p-8">
+        <div class="bg-goCard border border-white/5 w-full max-w-xl rounded-[3rem] p-12 space-y-10">
             <div class="flex justify-between items-center">
-                <h3 class="text-sm font-black tracking-[0.3em] text-goLime uppercase">Initialize Node</h3>
-                <button onclick="closeModal('create-room-modal')" class="text-gray-700 hover:text-white transition-colors"><i data-lucide="x"></i></button>
-            </div>
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-600 mb-2 ml-1">Node Identification</label>
-                    <input type="text" id="new-room-id" placeholder="SLUG (e.g. dev-lounge)" class="w-full bg-goDark border border-white/5 rounded-2xl px-6 py-5 text-xs font-bold text-white outline-none focus:border-goLime/50 uppercase placeholder:text-gray-800">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-600 mb-2 ml-1">Display Title</label>
-                    <input type="text" id="new-room-name" placeholder="HUMAN READABLE NAME" class="w-full bg-goDark border border-white/5 rounded-2xl px-6 py-5 text-xs font-bold text-white outline-none focus:border-goLime/50 uppercase placeholder:text-gray-800">
-                </div>
-                <button onclick="triggerRoomCreation()" class="w-full py-6 bg-white text-goDark font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-goLime transition-all shadow-xl">Activate Node</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Profile Modal -->
-    <div id="profile-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center p-8">
-        <div class="bg-goCard border border-white/5 w-full max-w-lg rounded-[3rem] p-12 space-y-10">
-            <div class="flex justify-between items-center">
-                <h3 class="text-sm font-black tracking-[0.3em] text-goLime uppercase">Protocol Identity</h3>
+                <h3 class="text-sm font-black tracking-[0.3em] text-goLime uppercase">Node Identity</h3>
                 <button onclick="closeModal('profile-modal')" class="text-gray-700 hover:text-white transition-colors"><i data-lucide="x"></i></button>
             </div>
-            <div class="space-y-8">
-                <div class="flex flex-col items-center gap-4">
-                    <div class="w-24 h-24 rounded-[2rem] bg-goLime text-goDark flex items-center justify-center font-black text-4xl">
-                        {{ username[:1].upper() }}
-                    </div>
-                    <h4 class="text-2xl font-black uppercase tracking-tighter">{{ username }}</h4>
+            <div class="flex flex-col items-center gap-8">
+                <div class="w-32 h-32 rounded-[3rem] bg-goLime text-goDark flex items-center justify-center font-black text-5xl">
+                    {{ username[:1].upper() }}
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-goDark/50 p-6 rounded-3xl border border-white/5">
-                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-600 block mb-1">Email</span>
-                        <span class="text-xs font-bold text-gray-300">{{ current_user.email }}</span>
+                <div class="w-full space-y-6">
+                    <div class="bg-goDark/50 p-6 rounded-3xl border border-white/5 space-y-2">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-700">Display Name</span>
+                        <input type="text" id="profile-name-input" value="{{ current_user.full_name or username }}" class="w-full bg-transparent border-0 outline-none text-xl font-black text-white">
                     </div>
-                    <div class="bg-goDark/50 p-6 rounded-3xl border border-white/5">
-                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-600 block mb-1">Phone</span>
-                        <span class="text-xs font-bold text-gray-300">{{ current_user.phone or 'Not Set' }}</span>
+                    <div class="bg-goDark/50 p-6 rounded-3xl border border-white/5 space-y-2">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-700">About Protocol</span>
+                        <textarea id="profile-bio-input" class="w-full bg-transparent border-0 outline-none text-sm font-bold text-gray-300 resize-none">{{ current_user.profile.bio }}</textarea>
                     </div>
-                </div>
-                <div class="bg-goDark/50 p-6 rounded-3xl border border-white/5">
-                    <span class="text-[9px] font-black uppercase tracking-widest text-gray-600 block mb-1">Bio Protocol</span>
-                    <p class="text-xs font-bold text-gray-300">{{ current_user.profile.bio }}</p>
+                    <button onclick="triggerProfileUpdate()" class="w-full py-6 bg-white text-goDark font-black rounded-3xl uppercase tracking-widest hover:bg-goLime transition-all">Save Changes</button>
                 </div>
             </div>
         </div>
     </div>
 
 </div>
+
+<style>
+    :root { --chat-font-size: 14px; }
+    #messages-container { font-size: var(--chat-font-size); scrollbar-width: none; }
+    #messages-container::-webkit-scrollbar { display: none; }
+    .lucide { width: 20px; height: 20px; }
+    @media (max-width: 1024px) {
+        .lucide { width: 18px; height: 18px; }
+    }
+</style>
 {% endblock %}

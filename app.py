@@ -54,6 +54,7 @@ def landing():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()
         username = request.form.get('username', '').strip().lower()
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password')
@@ -62,6 +63,7 @@ def signup():
         language = request.form.get('language', 'en')
         timezone = request.form.get('timezone', 'PKT')
         bio = request.form.get('bio', '').strip()
+        dob = request.form.get('dob', '')
 
         if not username or not email or not password:
             flash('Core credentials (Username, Email, Password) are required.')
@@ -92,6 +94,7 @@ def signup():
 
         # Construct our decoupled user schema data profile
         user_payload = {
+            "full_name": full_name,
             "username": username,
             "email": email,
             "password_hash": hashed_password,
@@ -103,7 +106,27 @@ def signup():
             "language": language,
             "timezone": timezone,
             "bio": bio,
-            "created_at": int(datetime.utcnow().timestamp() * 1000)
+            "dob": dob,
+            "created_at": int(datetime.utcnow().timestamp() * 1000),
+            "settings": {
+                "privacy": {
+                    "last_seen": "everyone",
+                    "online_status": "everyone",
+                    "profile_photo": "everyone",
+                    "about": "everyone",
+                    "read_receipts": True
+                },
+                "appearance": {
+                    "theme": "dark",
+                    "font_size": "standard",
+                    "wallpaper": "default"
+                },
+                "notifications": {
+                    "messages": True,
+                    "calls": True,
+                    "groups": True
+                }
+            }
         }
 
         # Write directly to the database via NoSQL document push
@@ -122,7 +145,7 @@ def login():
         login_input = raw_input.strip().lower()
 
         if not login_input:
-            flash('Please enter your username or email address.')
+            flash('Please enter your email address.')
             return redirect(url_for('login'))
 
         password = request.form.get('password')
@@ -186,7 +209,6 @@ def logout():
 def dashboard():
     firebase_token = session.get('firebase_token', '')
 
-    # Gather configuration fields from environment variables safely for the client side
     firebase_config = {
         "apiKey": os.environ.get("FIREBASE_API_KEY", ""),
         "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN", ""),
@@ -195,10 +217,9 @@ def dashboard():
         "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET", "")
     }
 
-    # Create a dummy default_room object to keep dashboard.html from throwing an UndefinedError
     default_room_fallback = {
         "id": "general",
-        "name": "# general"
+        "name": "General"
     }
 
     return render_template('dashboard.html',
@@ -215,7 +236,6 @@ def dashboard():
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin_panel():
-    # Security Guard: Check if current node session has admin privileges
     if not getattr(current_user, 'is_admin', False):
         flash('Access Denied: Master Administration credentials required.')
         return redirect(url_for('dashboard'))
@@ -223,7 +243,6 @@ def admin_panel():
     users_ref = firebase_db.reference('users')
     rooms_ref = firebase_db.reference('rooms')
 
-    # Handle Admin Actions (Post Requests like Ban, Unban, Delete Room)
     if request.method == 'POST':
         action = request.form.get('action')
         target_id = request.form.get('target_id')
@@ -250,7 +269,6 @@ def admin_panel():
                     "content": f"📢 {message}",
                     "timestamp": int(datetime.utcnow().timestamp() * 1000)
                 }
-                # Broadcast to all rooms
                 all_rooms = rooms_ref.get() or {}
                 for rid in all_rooms:
                     firebase_db.reference(f'messages/{rid}').push(broadcast_payload)
@@ -258,7 +276,6 @@ def admin_panel():
 
         return redirect(url_for('admin_panel'))
 
-    # Fetch fresh real-time NoSQL snapshots for the admin layout view
     all_users = users_ref.get() or {}
     all_rooms = rooms_ref.get() or {}
 
