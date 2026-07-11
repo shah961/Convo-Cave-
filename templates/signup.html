@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="min-h-screen flex items-center justify-center px-4 py-12 relative bg-goDark overflow-hidden">
+<div class="min-h-screen flex items-center justify-center px-4 py-20 relative bg-goDark overflow-hidden">
     <!-- Background Sphere -->
     <div id="orb-signup" class="absolute w-[350px] h-[350px] rounded-full bg-goLime opacity-5 blur-[100px] pointer-events-none bottom-1/4 right-1/4"></div>
 
@@ -19,27 +19,34 @@
           {% endif %}
         {% endwith %}
 
-        <form action="/signup" method="POST" class="space-y-8">
+        <form action="/signup" method="POST" class="space-y-8" enctype="multipart/form-data">
 
-            <!-- Section 1: Security Parameters -->
+            <!-- Profile Section -->
+            <div class="flex flex-col items-center gap-6 mb-10">
+                <div class="relative group">
+                    <div id="pfp-preview" class="w-24 h-24 rounded-[2rem] bg-goDark border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden transition-all group-hover:border-goLime/50">
+                        <i data-lucide="camera" class="w-8 h-8 text-gray-700"></i>
+                    </div>
+                    <input type="file" name="pfp" id="pfp-input" class="hidden" accept="image/*">
+                    <button type="button" onclick="document.getElementById('pfp-input').click()" class="absolute -bottom-2 -right-2 w-8 h-8 bg-goLime text-goDark rounded-xl flex items-center justify-center shadow-lg hover:scale-110 transition-all">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-600">Upload Profile Artifact</p>
+            </div>
+
+            <!-- Section 1: Identity -->
             <div>
-                <h4 class="text-[10px] uppercase tracking-[0.3em] text-goLime font-black mb-6 border-b border-white/5 pb-2">01. Security</h4>
+                <h4 class="text-[10px] uppercase tracking-[0.3em] text-goLime font-black mb-6 border-b border-white/5 pb-2">01. Identity</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Full Name</label>
+                        <input type="text" name="full_name" placeholder="YOUR NAME" required class="w-full bg-goDark border border-white/5 rounded-2xl px-5 py-4 text-xs font-bold focus:outline-none focus:border-goLime/50 text-gray-200 transition-all placeholder:text-gray-700">
+                    </div>
                     <div>
                         <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Username</label>
                         <input type="text" name="username" placeholder="IDENTIFIER" required class="w-full bg-goDark border border-white/5 rounded-2xl px-5 py-4 text-xs font-bold focus:outline-none focus:border-goLime/50 text-gray-200 transition-all placeholder:text-gray-700">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Password</label>
-                        <input type="password" name="password" placeholder="••••••••" required class="w-full bg-goDark border border-white/5 rounded-2xl px-5 py-4 text-xs font-bold focus:outline-none focus:border-goLime/50 text-gray-200 transition-all placeholder:text-gray-700">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Section 2: Identity -->
-            <div>
-                <h4 class="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-black mb-6 border-b border-white/5 pb-2">02. Identity</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Email</label>
                         <input type="email" name="email" placeholder="EMAIL ADDRESS" required class="w-full bg-goDark border border-white/5 rounded-2xl px-5 py-4 text-xs font-bold focus:outline-none focus:border-goLime/50 text-gray-200 transition-all placeholder:text-gray-700">
@@ -51,10 +58,29 @@
                 </div>
             </div>
 
-            <!-- Section 3: Profile Settings -->
+            <!-- Section 2: Security -->
+            <div>
+                <h4 class="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-black mb-6 border-b border-white/5 pb-2">02. Security</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Password</label>
+                        <input type="password" name="password" placeholder="••••••••" required class="w-full bg-goDark border border-white/5 rounded-2xl px-5 py-4 text-xs font-bold focus:outline-none focus:border-goLime/50 text-gray-200 transition-all placeholder:text-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Confirm Password</label>
+                        <input type="password" name="confirm_password" placeholder="••••••••" required class="w-full bg-goDark border border-white/5 rounded-2xl px-5 py-4 text-xs font-bold focus:outline-none focus:border-goLime/50 text-gray-200 transition-all placeholder:text-gray-700">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Profile Details -->
             <div>
                 <h4 class="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-black mb-6 border-b border-white/5 pb-2">03. Profile</h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="col-span-1 md:col-span-2 lg:col-span-1">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Birth Date</label>
+                        <input type="date" name="dob" class="w-full bg-goDark border border-white/5 rounded-xl px-4 py-3.5 text-[10px] font-bold focus:outline-none focus:border-goLime/50 text-gray-300">
+                    </div>
                     <div>
                         <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Country</label>
                         <select name="country" class="w-full bg-goDark border border-white/5 rounded-xl px-4 py-3.5 text-[10px] font-bold focus:outline-none focus:border-goLime/50 text-gray-300">
@@ -69,7 +95,6 @@
                         <select name="language" class="w-full bg-goDark border border-white/5 rounded-xl px-4 py-3.5 text-[10px] font-bold focus:outline-none focus:border-goLime/50 text-gray-300">
                             <option value="en">English</option>
                             <option value="es">Español</option>
-                            <option value="ur">اردو</option>
                         </select>
                     </div>
                     <div>
@@ -77,14 +102,20 @@
                         <select name="timezone" class="w-full bg-goDark border border-white/5 rounded-xl px-4 py-3.5 text-[10px] font-bold focus:outline-none focus:border-goLime/50 text-gray-300">
                             <option value="UTC">UTC</option>
                             <option value="PKT" selected>PKT (UTC+5)</option>
-                            <option value="EST">EST (UTC-5)</option>
                         </select>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Bio</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">Bio Protocol</label>
                     <textarea name="bio" placeholder="SHORT DESCRIPTION" rows="2" class="w-full bg-goDark border border-white/5 rounded-2xl px-5 py-4 text-xs font-bold focus:outline-none focus:border-goLime/50 text-gray-200 resize-none placeholder:text-gray-700"></textarea>
                 </div>
+            </div>
+
+            <div class="flex items-start gap-3 px-1">
+                <input type="checkbox" required name="terms" id="terms" class="mt-1 w-3 h-3 rounded border-white/5 bg-goDark checked:bg-goLime transition-all">
+                <label for="terms" class="text-[9px] font-black uppercase tracking-widest text-gray-600 cursor-pointer">
+                    I accept the <a href="#" class="text-goLime">Terms of Service</a> and <a href="#" class="text-goLime">Privacy Policy</a>
+                </label>
             </div>
 
             <button type="submit" class="w-full py-5 rounded-2xl bg-white text-goDark font-black text-xs uppercase tracking-[0.2em] hover:bg-goLime transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]">
@@ -101,10 +132,28 @@
     </div>
 </div>
 
-<script>
+<script type="module">
+    import { createIcons, Camera, Plus } from "https://unpkg.com/lucide@0.395.0/dist/esm/lucide.js";
+
     window.addEventListener('DOMContentLoaded', () => {
+        createIcons({ icons: { Camera, Plus } });
+
         gsap.to("#orb-signup", { x: -40, y: -20, duration: 8, repeat: -1, yoyo: true, ease: "sine.inOut" });
         gsap.to("#signup-card", { opacity: 1, y: 0, duration: 1, ease: "expo.out" });
+
+        const pfpInput = document.getElementById('pfp-input');
+        const pfpPreview = document.getElementById('pfp-preview');
+
+        pfpInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    pfpPreview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
     });
 </script>
 {% endblock %}
