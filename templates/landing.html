@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="relative overflow-hidden min-h-screen flex flex-col bg-goDark text-gray-100 transition-colors duration-500" id="landing-body">
+<div class="relative overflow-x-hidden min-h-screen flex flex-col bg-goDark text-gray-100 transition-colors duration-500" id="landing-body">
 
     <!-- GSAP Floating Background Spheres -->
     <div id="orb1" class="absolute w-[400px] h-[400px] rounded-full bg-goLime opacity-10 blur-[120px] pointer-events-none top-10 left-10 transition-opacity"></div>
@@ -16,8 +16,8 @@
     <nav class="hidden md:flex space-x-8 text-sm font-semibold uppercase tracking-widest">
         <a href="#home" class="hover:text-goLime transition-colors">Home</a>
         <a href="#features" class="hover:text-goLime transition-colors">Features</a>
+        <a href="#previews" class="hover:text-goLime transition-colors">Previews</a>
         <a href="#pricing" class="hover:text-goLime transition-colors">Pricing</a>
-        <a href="#faq" class="hover:text-goLime transition-colors">FAQ</a>
     </nav>
 
     <div class="flex items-center space-x-4">
@@ -82,91 +82,144 @@
             <p class="text-gray-500 mt-4 uppercase tracking-[0.3em] text-xs font-bold">Encrypted Protocol Expansion</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="features-grid">
-            <!-- Feature Cards (8 Total as requested) -->
             <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
-                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
-                    <i data-lucide="zap"></i>
-                </div>
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20"><i data-lucide="zap"></i></div>
                 <h4 class="text-xl font-black mb-4 uppercase">Real-time Sync</h4>
                 <p class="text-sm text-gray-500 font-medium">Instant messaging with zero latency across all nodes.</p>
             </div>
             <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
-                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
-                    <i data-lucide="video"></i>
-                </div>
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20"><i data-lucide="video"></i></div>
                 <h4 class="text-xl font-black mb-4 uppercase">Voice & Video</h4>
                 <p class="text-sm text-gray-500 font-medium">Crystal clear HD communication with E2EE protection.</p>
             </div>
             <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
-                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
-                    <i data-lucide="users"></i>
-                </div>
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20"><i data-lucide="users"></i></div>
                 <h4 class="text-xl font-black mb-4 uppercase">Group Chats</h4>
                 <p class="text-sm text-gray-500 font-medium">Coordinate with thousands in high-performance clusters.</p>
             </div>
             <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
-                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
-                    <i data-lucide="file-up"></i>
-                </div>
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20"><i data-lucide="file-up"></i></div>
                 <h4 class="text-xl font-black mb-4 uppercase">File Sharing</h4>
                 <p class="text-sm text-gray-500 font-medium">Send massive data packets with instant cloud previews.</p>
             </div>
             <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
-                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
-                    <i data-lucide="shield-lock"></i>
-                </div>
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20"><i data-lucide="shield-lock"></i></div>
                 <h4 class="text-xl font-black mb-4 uppercase">End-to-End</h4>
                 <p class="text-sm text-gray-500 font-medium">Military grade encryption for every single transmission.</p>
             </div>
             <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
-                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
-                    <i data-lucide="smartphone"></i>
-                </div>
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20"><i data-lucide="smartphone"></i></div>
                 <h4 class="text-xl font-black mb-4 uppercase">Multi-Device</h4>
                 <p class="text-sm text-gray-500 font-medium">Seamless sync between mobile, desktop, and web.</p>
             </div>
             <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
-                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
-                    <i data-lucide="layers"></i>
-                </div>
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20"><i data-lucide="layers"></i></div>
                 <h4 class="text-xl font-black mb-4 uppercase">Status Updates</h4>
                 <p class="text-sm text-gray-500 font-medium">Share your coordinates with temporary stories.</p>
             </div>
             <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] hover:border-goLime/30 transition-all group feature-card">
-                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20">
-                    <i data-lucide="moon"></i>
-                </div>
+                <div class="w-14 h-14 bg-goLime/10 text-goLime rounded-2xl flex items-center justify-center mb-8 border border-goLime/20"><i data-lucide="moon"></i></div>
                 <h4 class="text-xl font-black mb-4 uppercase">Dark Mode</h4>
                 <p class="text-sm text-gray-500 font-medium">Elegant, eye-friendly interface built for the night.</p>
             </div>
         </div>
     </section>
 
-    <!-- 4. Pricing / Premium Section -->
-    <section id="pricing" class="max-w-7xl mx-auto px-6 py-32 w-full relative z-10 border-t border-white/5">
+    <!-- 4. Previews Section -->
+    <section id="previews" class="max-w-7xl mx-auto px-6 py-32 w-full relative z-10 border-t border-white/5">
         <div class="text-center mb-20">
-            <h3 class="text-4xl md:text-5xl font-black tracking-tighter uppercase">Choose Your Plan</h3>
+            <h3 class="text-4xl md:text-5xl font-black tracking-tighter uppercase">Interface Previews</h3>
         </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 overflow-hidden">
+            <div class="bg-goCard border border-white/5 rounded-[2rem] aspect-[9/16] overflow-hidden group shadow-2xl">
+                 <div class="w-full h-full bg-goDark/50 flex flex-col p-6 space-y-4">
+                     <div class="w-full h-12 bg-white/5 rounded-2xl border border-white/5"></div>
+                     <div class="flex-grow bg-white/5 rounded-3xl border border-white/5 flex items-center justify-center">
+                         <i data-lucide="message-square" class="w-12 h-12 text-goLime/20"></i>
+                     </div>
+                 </div>
+            </div>
+            <div class="bg-goCard border border-goLime/30 rounded-[2rem] aspect-[9/16] overflow-hidden group shadow-[0_0_50px_rgba(204,255,0,0.1)] scale-110 z-10">
+                 <div class="w-full h-full bg-goDark flex flex-col p-6 space-y-4">
+                     <div class="flex justify-between items-center"><div class="w-20 h-4 bg-goLime/20 rounded-full"></div><div class="w-10 h-10 bg-goLime rounded-xl"></div></div>
+                     <div class="flex-grow space-y-4 py-10">
+                         <div class="w-3/4 h-12 bg-white/5 rounded-2xl self-start"></div>
+                         <div class="w-3/4 h-12 bg-goLime text-goDark rounded-2xl self-end ml-auto"></div>
+                     </div>
+                 </div>
+            </div>
+            <div class="bg-goCard border border-white/5 rounded-[2rem] aspect-[9/16] overflow-hidden group shadow-2xl">
+                 <div class="w-full h-full bg-goDark/50 flex flex-col p-6 space-y-4">
+                     <div class="w-full h-12 bg-white/5 rounded-2xl border border-white/5"></div>
+                     <div class="flex-grow bg-white/5 rounded-3xl border border-white/5 flex items-center justify-center">
+                         <i data-lucide="phone" class="w-12 h-12 text-goLime/20"></i>
+                     </div>
+                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Why Choose Us Section -->
+    <section class="max-w-7xl mx-auto px-6 py-32 w-full relative z-10 border-t border-white/5">
+        <div class="flex flex-col lg:flex-row items-center gap-16">
+            <div class="flex-1 space-y-8">
+                <h3 class="text-4xl md:text-5xl font-black tracking-tighter uppercase leading-tight">Why the Go Protocol?</h3>
+                <p class="text-gray-500 font-medium text-lg">Engineered for absolute speed and cryptographic security, Convo Go isn't just an app—it's a high-performance communication infrastructure.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="flex gap-4"><i data-lucide="check-circle-2" class="text-goLime shrink-0"></i><span class="text-sm font-bold uppercase tracking-widest">99.9% Uptime</span></div>
+                    <div class="flex gap-4"><i data-lucide="check-circle-2" class="text-goLime shrink-0"></i><span class="text-sm font-bold uppercase tracking-widest">AES-256 E2EE</span></div>
+                    <div class="flex gap-4"><i data-lucide="check-circle-2" class="text-goLime shrink-0"></i><span class="text-sm font-bold uppercase tracking-widest">Cloud Sync</span></div>
+                    <div class="flex gap-4"><i data-lucide="check-circle-2" class="text-goLime shrink-0"></i><span class="text-sm font-bold uppercase tracking-widest">AI Assisted</span></div>
+                </div>
+            </div>
+            <div class="flex-1 w-full bg-goCard border border-white/5 p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-goLime/5 to-transparent"></div>
+                <div class="relative space-y-6 font-mono text-[10px]">
+                    <div class="flex justify-between border-b border-white/5 pb-2"><span>LATENCY</span><span class="text-goLime">0.02ms</span></div>
+                    <div class="flex justify-between border-b border-white/5 pb-2"><span>ENCRYPTION</span><span class="text-goLime">ACTIVE</span></div>
+                    <div class="flex justify-between border-b border-white/5 pb-2"><span>NODES</span><span class="text-goLime">842,109</span></div>
+                    <div class="pt-4"><div class="w-full h-1 bg-goDark rounded-full"><div class="h-full bg-goLime w-3/4"></div></div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Testimonials Section -->
+    <section class="max-w-7xl mx-auto px-6 py-32 w-full relative z-10 border-t border-white/5">
+        <div class="text-center mb-20">
+            <h3 class="text-4xl md:text-5xl font-black tracking-tighter uppercase">Signal Feedback</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] space-y-6">
+                <p class="text-gray-400 font-medium italic">"The speed of Go is unparalleled. The E2EE implementation gives our team absolute peace of mind."</p>
+                <div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full bg-goLime/10 border border-goLime/20"></div><div><h5 class="text-xs font-black uppercase">Sarah K.</h5><p class="text-[9px] text-gray-600 font-bold uppercase">CTO @ Nexus</p></div></div>
+            </div>
+            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] space-y-6">
+                <p class="text-gray-400 font-medium italic">"Cleanest UI I've seen in years. The responsiveness on mobile is exactly what we needed."</p>
+                <div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full bg-goLime/10 border border-goLime/20"></div><div><h5 class="text-xs font-black uppercase">Marcus V.</h5><p class="text-[9px] text-gray-600 font-bold uppercase">Product Designer</p></div></div>
+            </div>
+            <div class="bg-goCard border border-white/5 p-10 rounded-[2.5rem] space-y-6">
+                <p class="text-gray-400 font-medium italic">"Switching to Go Protocol reduced our internal communication latency by 40%."</p>
+                <div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full bg-goLime/10 border border-goLime/20"></div><div><h5 class="text-xs font-black uppercase">Elena R.</h5><p class="text-[9px] text-gray-600 font-bold uppercase">Systems Architect</p></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Pricing Section -->
+    <section id="pricing" class="max-w-7xl mx-auto px-6 py-32 w-full relative z-10 border-t border-white/5">
+        <div class="text-center mb-20"><h3 class="text-4xl md:text-5xl font-black tracking-tighter uppercase">Tiered Access</h3></div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div class="bg-goCard border border-white/5 p-12 rounded-[3rem] space-y-8">
-                <div>
-                    <h4 class="text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Standard</h4>
-                    <p class="text-4xl font-black">FREE</p>
-                </div>
+                <div><h4 class="text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Standard</h4><p class="text-4xl font-black">FREE</p></div>
                 <ul class="space-y-4 text-sm font-medium text-gray-400">
                     <li class="flex items-center gap-2 text-white"><i data-lucide="check" class="w-4 h-4 text-goLime"></i> Unlimited Messages</li>
                     <li class="flex items-center gap-2 text-white"><i data-lucide="check" class="w-4 h-4 text-goLime"></i> HD Video Calls</li>
-                    <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4"></i> 2GB Cloud Storage</li>
                 </ul>
                 <button class="w-full py-4 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-goDark transition-all">Select Plan</button>
             </div>
             <div class="bg-white border border-goLime p-12 rounded-[3rem] space-y-8 shadow-[0_0_50px_rgba(204,255,0,0.2)] scale-105">
-                <div>
-                    <h4 class="text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Enterprise</h4>
-                    <p class="text-4xl font-black text-goDark">$9.99<span class="text-sm text-gray-400">/mo</span></p>
-                </div>
+                <div><h4 class="text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Enterprise</h4><p class="text-4xl font-black text-goDark">$9.99<span class="text-sm text-gray-600">/mo</span></p></div>
                 <ul class="space-y-4 text-sm font-medium text-goDark">
-                    <li class="flex items-center gap-2 font-bold"><i data-lucide="check" class="w-4 h-4 text-goLime"></i> 100GB Cloud Storage</li>
                     <li class="flex items-center gap-2 font-bold"><i data-lucide="check" class="w-4 h-4 text-goLime"></i> AI Assistant Access</li>
                     <li class="flex items-center gap-2 font-bold"><i data-lucide="check" class="w-4 h-4 text-goLime"></i> Custom App Themes</li>
                 </ul>
@@ -175,94 +228,69 @@
         </div>
     </section>
 
-    <!-- 5. FAQ Section -->
+    <!-- 8. FAQ Section -->
     <section id="faq" class="max-w-3xl mx-auto px-6 py-32 w-full relative z-10 border-t border-white/5">
-        <div class="text-center mb-16">
-            <h3 class="text-4xl font-black tracking-tighter uppercase">FAQ</h3>
-        </div>
+        <div class="text-center mb-16"><h3 class="text-4xl font-black tracking-tighter uppercase">Knowledge Base</h3></div>
         <div class="space-y-4">
             <div class="bg-goCard border border-white/5 rounded-3xl overflow-hidden">
-                <button class="w-full px-8 py-6 text-left flex justify-between items-center group" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                    <span class="text-sm font-bold uppercase tracking-tight">Is Convo Go truly end-to-end encrypted?</span>
-                    <i data-lucide="chevron-down" class="w-5 h-5 text-goLime group-hover:rotate-180 transition-transform"></i>
-                </button>
-                <div class="hidden px-8 pb-6 text-sm text-gray-500 font-medium">
-                    Yes, every message and call is protected by AES-256 and RSA encryption protocols.
-                </div>
+                <button class="w-full px-8 py-6 text-left flex justify-between items-center group" onclick="this.nextElementSibling.classList.toggle('hidden')"><span class="text-sm font-bold uppercase tracking-tight">Is Convo Go truly encrypted?</span><i data-lucide="chevron-down" class="w-5 h-5 text-goLime group-hover:rotate-180 transition-transform"></i></button>
+                <div class="hidden px-8 pb-6 text-sm text-gray-500 font-medium">Yes, every message and call is protected by AES-256 and RSA encryption protocols.</div>
             </div>
             <div class="bg-goCard border border-white/5 rounded-3xl overflow-hidden">
-                <button class="w-full px-8 py-6 text-left flex justify-between items-center group" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                    <span class="text-sm font-bold uppercase tracking-tight">Can I use it on multiple devices?</span>
-                    <i data-lucide="chevron-down" class="w-5 h-5 text-goLime group-hover:rotate-180 transition-transform"></i>
-                </button>
-                <div class="hidden px-8 pb-6 text-sm text-gray-500 font-medium">
-                    Absolutely. Convo Go syncs across web, desktop, and mobile instantly.
-                </div>
+                <button class="w-full px-8 py-6 text-left flex justify-between items-center group" onclick="this.nextElementSibling.classList.toggle('hidden')"><span class="text-sm font-bold uppercase tracking-tight">Can I use it on multiple devices?</span><i data-lucide="chevron-down" class="w-5 h-5 text-goLime group-hover:rotate-180 transition-transform"></i></button>
+                <div class="hidden px-8 pb-6 text-sm text-gray-500 font-medium">Absolutely. Convo Go syncs across web, desktop, and mobile instantly.</div>
             </div>
         </div>
     </section>
 
-    <!-- 6. Footer -->
+    <!-- 9. Blog/News Section Preview -->
+    <section class="max-w-7xl mx-auto px-6 py-32 w-full relative z-10 border-t border-white/5">
+        <div class="flex justify-between items-end mb-16">
+            <div><h3 class="text-4xl font-black uppercase tracking-tighter">Latest Signals</h3><p class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mt-2">Protocol Updates & News</p></div>
+            <a href="#" class="text-[10px] font-black uppercase tracking-widest text-goLime hover:underline">View All Posts</a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="group cursor-pointer">
+                <div class="aspect-video bg-white/5 rounded-[2.5rem] border border-white/5 mb-6 overflow-hidden"><div class="w-full h-full bg-gradient-to-tr from-goLime/10 to-transparent group-hover:scale-110 transition-transform duration-700"></div></div>
+                <span class="text-[9px] font-black text-goLime uppercase tracking-widest">Protocol Update • July 2026</span>
+                <h4 class="text-xl font-black uppercase tracking-tight mt-2 group-hover:text-goLime transition-colors">Introducing the AI Summarization Engine</h4>
+            </div>
+            <div class="group cursor-pointer">
+                <div class="aspect-video bg-white/5 rounded-[2.5rem] border border-white/5 mb-6 overflow-hidden"><div class="w-full h-full bg-gradient-to-tr from-purple-500/10 to-transparent group-hover:scale-110 transition-transform duration-700"></div></div>
+                <span class="text-[9px] font-black text-purple-500 uppercase tracking-widest">Security Report • June 2026</span>
+                <h4 class="text-xl font-black uppercase tracking-tight mt-2 group-hover:text-purple-500 transition-colors">Achieving Post-Quantum Encryption Standards</h4>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. Footer -->
     <footer class="w-full max-w-7xl mx-auto px-6 py-20 border-t border-white/5 z-20 relative">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-12 mb-20">
             <div class="col-span-2 space-y-6">
-                <div class="flex items-center gap-2">
-                    <img src="/static/logo.png" alt="Convo Go" class="h-8 w-auto">
-                    <span class="text-xl font-black tracking-tighter">CONVO <span class="text-goLime">GO</span></span>
-                </div>
-                <p class="text-sm text-gray-600 max-w-xs font-medium leading-relaxed">
-                    The next-gen communication protocol for high-performance teams and individuals.
-                </p>
+                <div class="flex items-center gap-2"><img src="/static/logo.png" alt="Convo Go" class="h-8 w-auto"><span class="text-xl font-black tracking-tighter">CONVO <span class="text-goLime">GO</span></span></div>
+                <p class="text-sm text-gray-600 max-w-xs font-medium">The next-gen communication protocol for high-performance teams.</p>
                 <div class="flex gap-4">
                     <a href="#" class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-goLime hover:text-goDark transition-all"><i data-lucide="twitter" class="w-4 h-4"></i></a>
                     <a href="#" class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-goLime hover:text-goDark transition-all"><i data-lucide="github" class="w-4 h-4"></i></a>
                     <a href="#" class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center hover:bg-goLime hover:text-goDark transition-all"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
                 </div>
             </div>
-            <div class="space-y-6">
-                <h5 class="text-[10px] font-black uppercase tracking-[0.2em] text-white">Product</h5>
-                <ul class="space-y-4 text-xs font-bold text-gray-600">
-                    <li><a href="#features" class="hover:text-goLime transition-colors">Features</a></li>
-                    <li><a href="#pricing" class="hover:text-goLime transition-colors">Pricing</a></li>
-                    <li><a href="#" class="hover:text-goLime transition-colors">Security</a></li>
-                    <li><a href="#" class="hover:text-goLime transition-colors">AI Engine</a></li>
-                </ul>
-            </div>
-            <div class="space-y-6">
-                <h5 class="text-[10px] font-black uppercase tracking-[0.2em] text-white">Company</h5>
-                <ul class="space-y-4 text-xs font-bold text-gray-600">
-                    <li><a href="#" class="hover:text-goLime transition-colors">About</a></li>
-                    <li><a href="#" class="hover:text-goLime transition-colors">Careers</a></li>
-                    <li><a href="#" class="hover:text-goLime transition-colors">Blog</a></li>
-                    <li><a href="#" class="hover:text-goLime transition-colors">Terms</a></li>
-                </ul>
-            </div>
+            <div><h5 class="text-[10px] font-black uppercase tracking-widest text-white mb-6">Product</h5><ul class="space-y-4 text-xs font-bold text-gray-600"><li><a href="#" class="hover:text-goLime">Features</a></li><li><a href="#" class="hover:text-goLime">Security</a></li><li><a href="#" class="hover:text-goLime">Pricing</a></li></ul></div>
+            <div><h5 class="text-[10px] font-black uppercase tracking-widest text-white mb-6">Company</h5><ul class="space-y-4 text-xs font-bold text-gray-600"><li><a href="#" class="hover:text-goLime">About</a></li><li><a href="#" class="hover:text-goLime">Careers</a></li><li><a href="#" class="hover:text-goLime">Blog</a></li></ul></div>
+            <div><h5 class="text-[10px] font-black uppercase tracking-widest text-white mb-6">Legal</h5><ul class="space-y-4 text-xs font-bold text-gray-600"><li><a href="#" class="hover:text-goLime">Privacy</a></li><li><a href="#" class="hover:text-goLime">Terms</a></li><li><a href="#" class="hover:text-goLime">Cookies</a></li></ul></div>
         </div>
-        <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">&copy; 2026 CONVO GO PROTOCOL. ALL RIGHTS RESERVED.</p>
-            <div class="flex gap-8 text-[10px] font-black uppercase tracking-widest text-gray-700">
-                <a href="#" class="hover:text-white">Privacy Policy</a>
-                <a href="#" class="hover:text-white">Cookies</a>
-            </div>
-        </div>
+        <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6"><p class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-700">&copy; 2026 CONVO GO PROTOCOL. ALL RIGHTS RESERVED.</p><div class="flex gap-8 text-[10px] font-black text-gray-700"><a href="/admin" class="text-goLime/50 hover:text-goLime">OWNER ACCESS</a></div></div>
     </footer>
 </div>
 
 <script type="module">
-    import { createIcons, Zap, Video, Users, FileUp, ShieldLock, Smartphone, Layers, Moon, ChevronDown, Check, Apple, Play, Twitter, Github, Linkedin, ShieldCheck } from "https://unpkg.com/lucide@0.395.0/dist/esm/lucide.js";
+    import { createIcons, Zap, Video, Users, FileUp, ShieldLock, Smartphone, Layers, Moon, ChevronDown, Check, Apple, Play, Twitter, Github, Linkedin, ShieldCheck, CheckCircle2, MessageSquare, Phone, X } from "https://unpkg.com/lucide@0.395.0/dist/esm/lucide.js";
 
     window.addEventListener('DOMContentLoaded', () => {
-        createIcons({
-            icons: { Zap, Video, Users, FileUp, ShieldLock, Smartphone, Layers, Moon, ChevronDown, Check, Apple, Play, Twitter, Github, Linkedin, ShieldCheck }
-        });
-
+        createIcons({ icons: { Zap, Video, Users, FileUp, ShieldLock, Smartphone, Layers, Moon, ChevronDown, Check, Apple, Play, Twitter, Github, Linkedin, ShieldCheck, CheckCircle2, MessageSquare, Phone, X } });
         gsap.registerPlugin(ScrollTrigger);
-
-        // Background Animations
         gsap.to("#orb1", { x: 100, y: 50, duration: 10, repeat: -1, yoyo: true, ease: "sine.inOut" });
         gsap.to("#orb2", { x: -100, y: -50, duration: 12, repeat: -1, yoyo: true, ease: "sine.inOut" });
-
-        // Hero Animations
         const tl = gsap.timeline();
         tl.to("#header-nav", { opacity: 1, y: 0, duration: 1, ease: "expo.out" })
           .to("#hero-badge", { opacity: 1, y: 0, duration: 0.8, ease: "expo.out" }, "-=0.6")
@@ -270,17 +298,8 @@
           .to("#hero-desc", { opacity: 1, y: 0, duration: 1, ease: "expo.out" }, "-=0.8")
           .to("#hero-cta", { opacity: 1, y: 0, duration: 1, ease: "expo.out" }, "-=0.8")
           .to("#hero-gfx", { opacity: 1, scale: 1, duration: 1.5, ease: "expo.out" }, "-=1");
-
-        // Scroll Reveal Animations
-        gsap.to(".feature-header", {
-            scrollTrigger: { trigger: ".feature-header", start: "top 90%" },
-            opacity: 1, y: 0, duration: 1, ease: "expo.out"
-        });
-
-        gsap.to(".feature-card", {
-            scrollTrigger: { trigger: "#features-grid", start: "top 80%" },
-            opacity: 1, y: 0, duration: 1, stagger: 0.1, ease: "expo.out"
-        });
+        gsap.to(".feature-header", { scrollTrigger: { trigger: ".feature-header", start: "top 90%" }, opacity: 1, y: 0, duration: 1, ease: "expo.out" });
+        gsap.to(".feature-card", { scrollTrigger: { trigger: "#features-grid", start: "top 80%" }, opacity: 1, y: 0, duration: 1, stagger: 0.1, ease: "expo.out" });
     });
 </script>
 {% endblock %}
